@@ -117,9 +117,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const customerNameField = document.getElementById('customer_name');
     if (customerNameField.tagName === 'SELECT') {
         loadCustomersAndInspectors();
+		// 고객사 선택 변경 시 기본값 자동 채움
+		customerNameField.addEventListener('change', function() {
+			if (this.value) {
+				prefillFromCustomerDetail(this.value);
+			}
+		});
     } else {
         // 고객사가 고정된 경우 해당 고객사의 담당자 정보만 로드
         loadInspectorsOnly();
+		// 고객사 상세 정보로 기본값 자동 채움
+		if (customerNameField && customerNameField.value) {
+			prefillFromCustomerDetail(customerNameField.value);
+		}
     }
 });
 
@@ -202,6 +212,41 @@ function addDefaultInspectors() {
         option.textContent = inspector;
         inspectorSelect.appendChild(option);
     });
+}
+
+// 고객 상세정보를 이용해 점검자/Vertica 버전 기본값 자동 채움
+function prefillFromCustomerDetail(customerName) {
+	const url = '${pageContext.request.contextPath}/customers?action=getDetail&customerName=' + encodeURIComponent(customerName);
+	fetch(url)
+		.then(response => response.json())
+		.then(data => {
+			if (!data) { return; }
+
+			// 점검자 기본값: mainManager 우선, 없으면 subManager
+			const main = data.mainManager && data.mainManager.trim ? data.mainManager.trim() : data.mainManager;
+			const sub = data.subManager && data.subManager.trim ? data.subManager.trim() : data.subManager;
+			const defaultInspector = (main && main.length > 0) ? main : (sub && sub.length > 0 ? sub : null);
+			if (defaultInspector) {
+				const inspectorSelect = document.getElementById('inspector_name');
+				const values = Array.from(inspectorSelect.options).map(o => o.value);
+				if (!values.includes(defaultInspector)) {
+					const opt = document.createElement('option');
+					opt.value = defaultInspector;
+					opt.textContent = defaultInspector;
+					inspectorSelect.appendChild(opt);
+				}
+				inspectorSelect.value = defaultInspector;
+			}
+
+			// Vertica 버전 기본값
+			if (data.verticaVersion) {
+				const versionInput = document.getElementById('vertica_version');
+				if (versionInput && !versionInput.value) {
+					versionInput.value = data.verticaVersion;
+				}
+			}
+		})
+		.catch(err => console.error('prefillFromCustomerDetail error:', err));
 }
 
 // 폼 유효성 검사

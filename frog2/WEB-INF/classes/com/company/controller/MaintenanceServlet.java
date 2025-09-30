@@ -59,11 +59,14 @@ public class MaintenanceServlet extends HttpServlet {
             if (customerName != null && !customerName.isEmpty()) {
                 // 해당 고객사의 정기점검 이력 조회
                 List<MaintenanceRecordDTO> records = maintenanceDAO.getMaintenanceRecordsByCustomer(customerName);
+                // 라이선스 사용률 시리즈
+                List<java.util.Map<String, Object>> usageSeries = maintenanceDAO.getLicenseUsageSeries(customerName);
 
                 // 고객사 기본 정보 조회
                 CustomerDTO customer = customerDAO.getCustomerByName(customerName);
 
                 request.setAttribute("records", records);
+                request.setAttribute("usageSeries", usageSeries);
                 request.setAttribute("customer", customer);
                 request.setAttribute("customerName", customerName);
                 request.setAttribute("viewType", "history");

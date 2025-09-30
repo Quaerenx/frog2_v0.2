@@ -105,9 +105,11 @@ public class CustomersServlet extends HttpServlet {
                 CustomerDTO customer = customerDAO.getCustomerByName(customerName);
                 request.setAttribute("customer", customer);
 
-                // 상세정보 조회
+                // 상세정보 조회 (운영/스테이징/개발)
                 CustomerDetailDAO detailDAO = new CustomerDetailDAO();
                 CustomerDetailDTO customerDetail = detailDAO.getCustomerDetail(customerName);
+                CustomerDetailDTO customerDetailStg = detailDAO.getCustomerDetailStg(customerName);
+                CustomerDetailDTO customerDetailDev = detailDAO.getCustomerDetailDev(customerName);
 
                 // Vertica EOS 조회: 상세정보의 버전 우선, 없으면 기본 고객 테이블의 버전으로 조회
                 String versionText = null;
@@ -125,6 +127,8 @@ public class CustomersServlet extends HttpServlet {
                 }
 
                 request.setAttribute("customerDetail", customerDetail);
+                request.setAttribute("customerDetailStg", customerDetailStg);
+                request.setAttribute("customerDetailDev", customerDetailDev);
 
                 request.setAttribute("viewType", "detail");
                 request.getRequestDispatcher("/customers/customers_detail.jsp").forward(request, response);
@@ -152,6 +156,8 @@ public class CustomersServlet extends HttpServlet {
             request.getRequestDispatcher("/customers/support.jsp").forward(request, response);
         } else if ("editDetail".equals(viewType)) {
             String customerName = request.getParameter("customerName");
+            String env = request.getParameter("env");
+            if (env == null || env.isEmpty()) { env = "prod"; }
             if (customerName != null && !customerName.isEmpty()) {
                 try {
                     // URL 디코딩 추가
@@ -165,7 +171,16 @@ public class CustomersServlet extends HttpServlet {
 
                 // 상세정보 조회
                 CustomerDetailDAO detailDAO = new CustomerDetailDAO();
-                CustomerDetailDTO customerDetail = detailDAO.getCustomerDetail(customerName);
+                CustomerDetailDTO customerDetail;
+                if ("stg".equalsIgnoreCase(env)) {
+                    customerDetail = detailDAO.getCustomerDetailStg(customerName);
+                } else if ("dev".equalsIgnoreCase(env)) {
+                    customerDetail = detailDAO.getCustomerDetailDev(customerName);
+                } else {
+                    customerDetail = detailDAO.getCustomerDetail(customerName);
+                    env = "prod";
+                }
+                request.setAttribute("env", env);
                 request.setAttribute("customerDetail", customerDetail);
 
                 request.setAttribute("viewType", "editDetail");
@@ -491,6 +506,8 @@ public class CustomersServlet extends HttpServlet {
 
         try {
             CustomerDetailDTO detail = new CustomerDetailDTO();
+            String env = getStringParam(request, "env");
+            if (env == null || env.isEmpty()) { env = "prod"; }
 
             // 파라미터 로그 출력 (몇 개만 테스트)
             String customerName = getStringParam(request, "customerName");
@@ -560,7 +577,14 @@ public class CustomersServlet extends HttpServlet {
 
             System.out.println("=== DAO 호출 전 ===");
             CustomerDetailDAO detailDAO = new CustomerDetailDAO();
-            boolean success = detailDAO.saveOrUpdateCustomerDetail(detail);
+            boolean success;
+            if ("stg".equalsIgnoreCase(env)) {
+                success = detailDAO.saveOrUpdateCustomerDetailStg(detail);
+            } else if ("dev".equalsIgnoreCase(env)) {
+                success = detailDAO.saveOrUpdateCustomerDetailDev(detail);
+            } else {
+                success = detailDAO.saveOrUpdateCustomerDetail(detail);
+            }
             System.out.println("=== DAO 호출 후, 결과: " + success + " ===");
 
             if (success) {
@@ -570,7 +594,7 @@ public class CustomersServlet extends HttpServlet {
             }
 
             String encodedName = java.net.URLEncoder.encode(detail.getCustomerName(), "UTF-8");
-            response.sendRedirect("customers?view=detail&customerName=" + encodedName);
+            response.sendRedirect("customers?view=detail&customerName=" + encodedName + "&env=" + env);
 
         } catch (Exception e) {
             System.out.println("=== 예외 발생 ===");

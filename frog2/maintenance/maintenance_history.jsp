@@ -193,14 +193,14 @@
         box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
     }
     
-    .history-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 1rem;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-    }
+	.history-meta {
+	    display: flex; 
+	    align-items: center; /* 수직 중앙 정렬로 변경하여 안정감을 줍니다. */
+	    margin-bottom: 1rem;
+	    flex-wrap: wrap;
+	    gap: 1rem; /* 간격을 조금 더 확보합니다. */
+	}
+
     
     .inspection-date {
         font-size: 1.1rem;
@@ -215,11 +215,12 @@
         color: #3b82f6;
     }
     
-    .inspector-info {
-        text-align: right;
-        color: #6b7280;
-        font-size: 0.875rem;
-    }
+	.inspector-info {
+	    margin-left: auto;
+	    text-align: right; [cite: 133]
+	    color: #6b7280; [cite: 133]
+	    font-size: 0.875rem;
+	}
     
     .inspector-name {
         font-weight: 500;
@@ -270,16 +271,18 @@
         color: #374151;
         line-height: 1.6;
         font-size: 0.875rem;
+        white-space: pre-wrap;	
     }
     
-    .note-label {
-        font-weight: 600;
-        color: #6b7280;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.375rem;
-    }
+	.note-label {
+	    font-weight: 600;
+	    color: #6b7280;
+	    margin-bottom: 0.25rem;
+	    display: flex;
+	    align-items: center;
+	    gap: 0.375rem;
+	    white-space: pre-wrap;
+	}
     
     .history-actions {
         display: flex;
@@ -489,17 +492,10 @@
                                     </span>
                                 </div>
                             </div>
-                            
                             <c:if test="${not empty record.note}">
-                                <div class="history-note">
-                                    <div class="note-label">
-                                        <i class="fas fa-sticky-note"></i>
-                                        점검 내용 및 비고
-                                    </div>
-                                    ${record.note}
-                                </div>
-                            </c:if>
-                            
+                                <div class="history-note"><div class="note-label"><i class="fas fa-sticky-note"> 점검 내용 및 비고</i>
+                                </div>${record.note}</div>
+                            </c:if> 
                             <div class="history-actions"></div>
                         </div>
                     </c:forEach>

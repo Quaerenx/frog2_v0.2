@@ -10,15 +10,99 @@
 
 <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/pages/customers.css">
 <style>
-	/* 고객 상세 - 미니멀 버튼 스타일 */
+	/* --- 기존 버튼 스타일은 그대로 유지 --- */
 	.customer-detail .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-	.customer-detail .btn-min { padding: 6px 12px; border-radius: 6px; font-size: 14px; line-height: 1.2; border: 1px solid #e5e7eb; background: #ffffff; color: #374151; text-decoration: none; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 6px; }
+	.customer-detail .btn-min { padding: 6px 12px; border-radius: 6px; font-size: 14px; line-height: 1.2;
+	border: 1px solid #e5e7eb; background: #ffffff; color: #374151; text-decoration: none; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 6px;
+	}
 	.customer-detail .btn-min:hover { background: #f3f4f6; color: #111827; }
-	.customer-detail .btn-min.primary { border-color: transparent; background: var(--primary); color: #ffffff; }
+	.customer-detail .btn-min.primary { border-color: transparent; background: var(--primary); color: #ffffff;
+	}
 	.customer-detail .btn-min.primary:hover { background: #2f4968; }
 	.customer-detail .btn-min.danger { border-color: transparent; background: #ef4444; color: #ffffff; }
-	.customer-detail .btn-min.danger:hover { background: #dc2626; }
+	.customer-detail .btn-min.danger:hover { background: #dc2626;
+	}
 	.customer-detail .btn-min i { font-size: 14px; }
+
+	/* --- [변경/추가된 CSS] 가독성 개선 스타일 --- */
+	
+	/* 1. 카드 UI 적용 */
+	.detail-section {
+	    background-color: #ffffff;
+	    border: 1px solid #e5e7eb;
+	    border-radius: 12px;
+	    padding: 24px;
+	    margin-bottom: 24px;
+	    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+	}
+
+	/* 2. 타이포그래피 계층 구조 강화 */
+	.detail-section-title {
+	    font-size: 18px;
+	    font-weight: 600;
+	    color: #111827;
+	    margin-bottom: 20px;
+	    padding-bottom: 12px;
+	    border-bottom: 1px solid #f3f4f6;
+	}
+
+	.detail-section-title i {
+	    color: var(--primary);
+	    margin-right: 8px;
+	}
+
+	.detail-label {
+	    display: block;
+	    font-size: 13px;
+	    font-weight: 500;
+	    color: #6b7280;
+	    margin-bottom: 4px;
+	}
+
+	.detail-value {
+	    font-size: 15px;
+	    font-weight: 500;
+	    color: #1f2937;
+	}
+
+	.note-content {
+	    padding: 12px;
+	    background-color: #f9fafb;
+	    border-radius: 6px;
+	    font-size: 14px;
+	    line-height: 1.6;
+	    color: #374151;
+	    white-space: pre-wrap; 
+	}
+
+	/* 3. 여백 및 정렬 개선 */
+	.detail-grid {
+	    display: grid;
+	    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	    gap: 24px;
+	}	
+
+	.detail-item.full-width {
+	    grid-column: 1 / -1;
+	}
+
+	/* 탭 UI */
+	.env-tabs { margin-top: 16px; }
+	.tab-nav { display: flex; gap: 8px; border-bottom: 1px; margin: 0; padding-left: 8px; }
+	.tab-btn { padding: 10px 14px; border: 1px solid #e5e7eb; border-bottom: none; background: #f9fafb; color: #374151; border-top-left-radius: 8px; border-top-right-radius: 8px; cursor: pointer; }
+	.tab-btn.active { background: #ffffff; color: #111827; font-weight: 600; border-color: #d1d5db; }
+	.tab-btn.disabled { opacity: 0.5; cursor: not-allowed; }
+	.tab-panel { display: none; }
+	.tab-panel.active { display: block; }
+	/* 탭과 첫 섹션 사이 간격 최소화 */
+	.env-tabs .tab-panel { margin-top: 0; padding-top: 0; }
+	.env-tabs .tab-panel > .detail-section:first-child { margin-top: 0; }
+
+	/* 탭 버튼이 카드 상단에 자연스럽게 붙도록 보더 겹침 처리 */
+	.env-tabs .tab-nav { margin-bottom: 0; }
+	 /*.env-tabs .tab-btn { border-bottom: 1px solid #e5e7eb; }*/
+	.env-tabs .tab-btn.active { border-bottom-color: #ffffff; margin-bottom: -1px; }
+	.env-tabs .tab-panel > .detail-section:first-child { border-top-left-radius: 0; border-top-right-radius: 0; }
 </style>
 
 <c:set var="currentCustomerName" value="${not empty customerDetail.customerName ? customerDetail.customerName : (not empty customer.customerName ? customer.customerName : '')}" />
@@ -60,13 +144,11 @@
         </jsp:attribute>
     </t:pageHeader>
     
-    <!-- 성공/에러 메시지 표시 -->
     <c:if test="${not empty sessionScope.message}">
         <div class="alert alert-success">
             <i class="fas fa-check-circle"></i>
             ${sessionScope.message}
         </div>
-
         <c:remove var="message" scope="session" />
     </c:if>
     
@@ -75,15 +157,20 @@
             <i class="fas fa-exclamation-circle"></i>
             ${sessionScope.error}
         </div>
-        <!-- detail-container 아래 전역 액션 버튼 -->
-        <!-- 이동: 모든 케이스 공통 영역으로 아래로 이동 -->
         <c:remove var="error" scope="session" />
     </c:if>
     
-    <!-- 고객사 상세정보가 있는 경우 -->
-    <c:if test="${not empty customerDetail}">
+    <c:set var="hasAnyDetail" value="${not empty customerDetail or not empty customerDetailStg or not empty customerDetailDev}" />
+    <c:if test="${hasAnyDetail}">
+        <div class="detail-container env-tabs">
+            <div class="tab-nav">
+                <button type="button" class="tab-btn" data-target="env-prod">운영</button>
+                <button type="button" class="tab-btn" data-target="env-stg">스테이징</button>
+                <button type="button" class="tab-btn" data-target="env-dev">개발</button>
+            </div>
+            <div class="tab-panel" id="env-prod">
+        <c:if test="${not empty customerDetail}">
         <div class="detail-container">
-            <!-- 메타정보 섹션 -->
             <div class="detail-section">
                 <div class="detail-section-title">
                     <i class="fas fa-info-circle"></i>
@@ -151,7 +238,6 @@
                 </div>
             </div>
             
-            <!-- Vertica 정보 섹션 -->
             <div class="detail-section">
                 <div class="detail-section-title">
                     <i class="fas fa-database"></i>
@@ -214,14 +300,13 @@
                         <span class="detail-label">사용자 정의 리소스풀 여부</span>
                         <span class="detail-value">${not empty customerDetail.customResourcePoolYn ? customerDetail.customResourcePoolYn : '-'}</span>
                     </div>
-                </div>
-                <div class="detail-item full-width mt-4">
-                    <span class="detail-label">백업비고</span>
-                    <div class="detail-value note-content">${not empty customerDetail.backupNote ? customerDetail.backupNote : '-'}</div>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">백업비고</span>
+                        <div class="detail-value note-content">${not empty customerDetail.backupNote ? customerDetail.backupNote : '-'}</div>
+                    </div>
                 </div>
             </div>
             
-            <!-- 환경 정보 섹션 -->
             <div class="detail-section">
                 <div class="detail-section-title">
                     <i class="fas fa-server"></i>
@@ -295,7 +380,6 @@
                 </div>
             </div>
             
-            <!-- 외부 솔루션 섹션 -->
             <div class="detail-section">
                 <div class="detail-section-title">
                     <i class="fas fa-puzzle-piece"></i>
@@ -321,7 +405,6 @@
                 </div>
             </div>
             
-            <!-- 기타 정보 섹션 -->
             <div class="detail-section">
                 <div class="detail-section-title">
                     <i class="fas fa-sticky-note"></i>
@@ -343,16 +426,39 @@
                         <span class="detail-label">고객 유형</span>
                         <span class="detail-value">${not empty customerDetail.customerType ? customerDetail.customerType : '-'}</span>
                     </div>
-                </div>
-                <div class="detail-item full-width mt-4">
-                    <span class="detail-label">비고</span>
-                    <div class="detail-value note-content">${not empty customerDetail.note ? customerDetail.note : '-'}</div>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">비고</span>
+                        <div class="detail-value note-content">${not empty customerDetail.note ? customerDetail.note : '-'}</div>
+                    </div>
                 </div>
             </div>
         </div>
     </c:if>
+    <c:if test="${empty customerDetail}">
+        <div class="alert alert-light">운영 환경 데이터가 없습니다.</div>
+    </c:if>
+    </div>
+    <div class="tab-panel" id="env-stg">
+        <c:if test="${empty customerDetailStg}">
+            <div class="alert alert-light">스테이징 환경 데이터가 없습니다.</div>
+        </c:if>
+        <c:if test="${not empty customerDetailStg}">
+            <c:set var="detail" value="${customerDetailStg}" />
+            <%@ include file="/customers/_detail_sections.jspf" %>
+        </c:if>
+    </div>
+    <div class="tab-panel" id="env-dev">
+        <c:if test="${empty customerDetailDev}">
+            <div class="alert alert-light">개발 환경 데이터가 없습니다.</div>
+        </c:if>
+        <c:if test="${not empty customerDetailDev}">
+            <c:set var="detail" value="${customerDetailDev}" />
+            <%@ include file="/customers/_detail_sections.jspf" %>
+        </c:if>
+    </div>
+    </div>
+    </c:if>
     
-    <!-- 상세정보가 없지만 기본 정보가 있는 경우 -->
     <c:if test="${empty customerDetail and not empty customer}">
         <div class="detail-container">
             <div class="detail-section text-center p-5">
@@ -367,17 +473,16 @@
                         <i class="fas fa-arrow-left"></i>
                         목록으로 돌아가기
                     </a>
-				<a href="${pageContext.request.contextPath}/customers?view=editDetail&customerName=${customer.customerName}" class="btn btn-primary">
-				    <i class="fas fa-edit"></i>
-				    정보 수정하기
-				</a>
+				    <a href="${pageContext.request.contextPath}/customers?view=editDetail&customerName=${customer.customerName}" class="btn btn-primary">
+				        <i class="fas fa-edit"></i>
+				        정보 수정하기
+				    </a>
                 </div>
             </div>
         </div>
     </c:if>
     
-    <!-- 고객사 정보가 전혀 없는 경우 -->
-    <c:if test="${empty customer and empty customerDetail}">
+    <c:if test="${empty customer and not hasAnyDetail}">
         <div class="detail-container">
             <div class="detail-section text-center p-5">
                 <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem; margin-bottom: 1rem;"></i>
@@ -390,22 +495,66 @@
             </div>
         </div>
     </c:if>
-<!-- detail-container 외부 공통 액션 영역: 언제나 표시 -->
-<div class="detail-actions" style="display:flex; justify-content:flex-end; gap:8px; margin:12px 0 0 0;">
-    <a href="javascript:void(0)" onclick="editCustomer('${currentCustomerName}')" class="btn-min primary">
-        <i class="fas fa-edit"></i> 정보수정
-    </a>
-    <a href="javascript:void(0)" onclick="deleteCustomer('${currentCustomerName}')" class="btn-min danger">
-        <i class="fas fa-trash"></i> 고객사 삭제
-    </a>
-    
-</div>
+
+    <div class="detail-actions" style="display:flex; justify-content:flex-end; gap:8px; margin:12px 0 0 0;">
+        <a href="javascript:void(0)" onclick="editCustomer('${currentCustomerName}', getActiveEnv())" class="btn-min primary">
+            <i class="fas fa-edit"></i> 정보수정
+        </a>
+        <a href="javascript:void(0)" onclick="deleteCustomer('${currentCustomerName}')" class="btn-min danger">
+            <i class="fas fa-trash"></i> 고객사 삭제
+        </a>
+    </div>
 </div>
 
 <script>
-function editCustomer(customerName) {
-	var encodedName = encodeURIComponent(customerName);
-	window.location.href = '${pageContext.request.contextPath}/customers?view=editDetail&customerName=' + encodedName;
+// 탭 전환 스크립트
+document.addEventListener('DOMContentLoaded', function() {
+	var tabs = document.querySelectorAll('.tab-btn');
+	var panels = document.querySelectorAll('.tab-panel');
+
+	function setActive(targetId) {
+		panels.forEach(function(p){ p.classList.remove('active'); });
+		tabs.forEach(function(t){ t.classList.remove('active'); });
+		var target = document.getElementById(targetId);
+		if (target) target.classList.add('active');
+		var btn = document.querySelector('.tab-btn[data-target="' + targetId + '"]');
+		if (btn) btn.classList.add('active');
+	}
+
+	// 초기 활성 탭 결정: URL env 우선, 없으면 운영 > 스테이징 > 개발 순
+	var initial = 'env-prod';
+	var params = new URLSearchParams(window.location.search);
+	var envParam = params.get('env');
+	if (envParam === 'stg') initial = 'env-stg';
+	if (envParam === 'dev') initial = 'env-dev';
+	var prodEmpty = document.querySelector('#env-prod .alert');
+	var stgEmpty = document.querySelector('#env-stg .alert');
+	var devEmpty = document.querySelector('#env-dev .alert');
+	if (prodEmpty) {
+		if (!stgEmpty) initial = 'env-stg';
+		else if (!devEmpty) initial = 'env-dev';
+	}
+	setActive(initial);
+
+	tabs.forEach(function(tab){
+		tab.addEventListener('click', function(){
+			setActive(tab.getAttribute('data-target'));
+		});
+	});
+});
+function getActiveEnv() {
+    var active = document.querySelector('.tab-btn.active');
+    if (!active) return 'prod';
+    var target = active.getAttribute('data-target');
+    if (target === 'env-stg') return 'stg';
+    if (target === 'env-dev') return 'dev';
+    return 'prod';
+}
+function editCustomer(customerName, env) {
+    var encodedName = encodeURIComponent(customerName);
+    var url = '${pageContext.request.contextPath}/customers?view=editDetail&customerName=' + encodedName;
+    if (env) url += '&env=' + encodeURIComponent(env);
+    window.location.href = url;
 }
 
 function deleteCustomer(customerName) {

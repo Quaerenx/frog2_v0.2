@@ -50,6 +50,7 @@
     
     <form id="customerDetailForm" method="post" action="${pageContext.request.contextPath}/customers">
         <input type="hidden" name="action" value="saveDetail">
+        <input type="hidden" name="env" value="${env != null ? env : 'prod'}">
         
         <div class="detail-container">
             <!-- 메타정보 섹션 -->

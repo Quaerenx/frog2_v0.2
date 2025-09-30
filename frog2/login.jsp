@@ -101,15 +101,23 @@
                 </div>
             <% } %>
             
-            <form action="login" method="post">
+            <form action="login" method="post" autocomplete="off">
+                <!-- 브라우저 자동완성 방지용 더미 필드 -->
+                <input type="text" style="display:none" autocomplete="username">
+                <input type="password" style="display:none" autocomplete="new-password">
                 <div class="form-group">
                     <label for="userId">ID</label>
-                    <input type="text" id="userId" name="userId" class="code-input" placeholder="" required>
+                    <input type="text" id="userId" name="userId" class="code-input" placeholder="" required autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
                 </div>
                 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="" required>
+                    <input type="password" id="password" name="password" placeholder="" required autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false">
+                </div>
+                
+                <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="rememberId" name="rememberId" style="width:16px; height:16px;">
+                    <label for="rememberId" style="margin:0;">ID 저장</label>
                 </div>
                 
                 <button type="submit" class="button">로그인</button>
@@ -137,5 +145,35 @@
         <div class="feature-item"></div>
     </div>
     <script src="${pageContext.request.contextPath}/resources/js/ryan_animation.js"></script>
+    <script>
+    // ID 저장 기능 (localStorage 사용)
+    document.addEventListener('DOMContentLoaded', function() {
+        var idInput = document.getElementById('userId');
+        var remember = document.getElementById('rememberId');
+        try {
+            var saved = localStorage.getItem('savedUserId');
+            var flag = localStorage.getItem('rememberId') === 'Y';
+            if (flag && saved) {
+                idInput.value = saved;
+                remember.checked = true;
+            }
+        } catch (e) {}
+
+        var form = document.querySelector('form[action="login"]');
+        if (form) {
+            form.addEventListener('submit', function() {
+                try {
+                    if (remember && remember.checked) {
+                        localStorage.setItem('rememberId', 'Y');
+                        localStorage.setItem('savedUserId', idInput ? (idInput.value || '') : '');
+                    } else {
+                        localStorage.removeItem('rememberId');
+                        localStorage.removeItem('savedUserId');
+                    }
+                } catch (e) {}
+            });
+        }
+    });
+    </script>
 </body>
 </html>

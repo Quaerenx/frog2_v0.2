@@ -270,6 +270,40 @@ public class MaintenanceRecordDAO {
         return records;
     }
 
+    // 고객사의 점검일/라이선스 사용률(%) 시계열 조회
+    public List<Map<String, Object>> getLicenseUsageSeries(String customerName) {
+        List<Map<String, Object>> points = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            String sql = "SELECT inspection_date, REGEXP_SUBSTR(note, '[0-9]+(?=%)', 1, 1) AS license_usage " +
+                         "FROM maintenance_records " +
+                         "WHERE customer_name = ? AND REGEXP_LIKE(note, '[0-9]+%') " +
+                         "ORDER BY inspection_date ASC";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, customerName);
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Map<String, Object> point = new LinkedHashMap<>();
+                java.sql.Date d = rs.getDate("inspection_date");
+                String usage = rs.getString("license_usage");
+                point.put("date", d != null ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(d) : null);
+                point.put("value", usage != null ? Integer.parseInt(usage) : null);
+                points.add(point);
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.close(rs, pstmt, conn);
+        }
+
+        return points;
+    }
+
     // 빈 문자열을 NULL로 처리하는 도우미 메서드
     private void setStringOrNull(PreparedStatement pstmt, int parameterIndex, String value) throws SQLException {
         if (value == null || value.trim().isEmpty()) {

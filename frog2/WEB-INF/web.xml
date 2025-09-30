@@ -130,11 +130,6 @@
 <servlet>
     <servlet-name>jsp</servlet-name>
     <servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
-    <multipart-config>
-        <max-file-size>10485760</max-file-size>        <!-- 10MB -->
-        <max-request-size>52428800</max-request-size>   <!-- 50MB -->
-        <file-size-threshold>1048576</file-size-threshold> <!-- 1MB -->
-    </multipart-config>
     <init-param>
         <param-name>fork</param-name>
         <param-value>false</param-value>
@@ -144,6 +139,11 @@
         <param-value>false</param-value>
     </init-param>
     <load-on-startup>3</load-on-startup>
+    <multipart-config>
+        <max-file-size>10485760</max-file-size>        <!-- 10MB -->
+        <max-request-size>52428800</max-request-size>   <!-- 50MB -->
+        <file-size-threshold>1048576</file-size-threshold> <!-- 1MB -->
+    </multipart-config>
 </servlet>
 
 
