@@ -240,6 +240,36 @@
             padding: 0.5rem;
         }
     }
+    
+    /* 검색 바 */
+    .ts-search-bar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 12px;
+        background: #ffffff;
+        border: none;
+        border-radius: 12px;
+        margin-bottom: 12px;
+    }
+    .ts-search-input {
+        flex: 1;
+        padding: 10px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+    .btn-search-simple {
+        padding: 10px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #374151;
+        cursor: pointer;
+    }
+    .btn-search-simple:hover {
+        background: #f9fafb;
+    }
 </style>
 
 <div class="troubleshooting-management">
@@ -276,52 +306,60 @@
     </c:if>
     
     <div class="table-container">
-        <div class="table-wrapper">
-            <table class="troubleshooting-table">
-                <thead>
-                    <tr>
-                        <th>제목</th>
-                        <th width="200">고객사</th>
-                        <th width="150">발생일자</th>
-                        <th width="120">작성자</th>
+    <div class="ts-search-bar">
+        <form method="get" action="${pageContext.request.contextPath}/troubleshooting" style="display:flex; gap:8px; align-items:center; width:100%;">
+            <input type="hidden" name="view" value="list" />
+            <input type="text" name="q" value="${q}" class="ts-search-input" placeholder="제목, 고객사, 작성자, 본문 전체에서 검색" autocomplete="off" />
+            <button type="submit" class="btn-search-simple">검색</button>
+        </form>
+    </div>
+    <div class="table-wrapper">
+        <table class="troubleshooting-table">
+            <thead>
+                <tr>
+                    <%-- 1. '고객사'와 '제목' 헤더의 순서를 변경합니다. --%>
+                    <th width="200">고객사</th>
+                    <th>제목</th>
+                    <th width="150">발생일자</th>
+                    <th width="120">작성자</th>
+                </tr>
+            </thead>
+            <tbody>
+                <c:forEach var="ts" items="${troubleshootingList}" varStatus="status">
+                    <tr onclick="location.href='${pageContext.request.contextPath}/troubleshooting?view=view&id=${ts.id}'">
+                        <%-- 2. '고객사'와 '제목' 데이터 셀(td)의 순서를 헤더와 동일하게 변경합니다. --%>
+                        <td class="text-center">${ts.customerName}</td>
+                        <td>
+                            <a href="${pageContext.request.contextPath}/troubleshooting?view=view&id=${ts.id}" 
+                               class="title-link" onclick="event.stopPropagation();">
+                                ${ts.title}
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <c:choose>
+                                <c:when test="${not empty ts.occurrenceDate}">
+                                    <fmt:formatDate value="${ts.occurrenceDate}" pattern="yyyy-MM-dd" />
+                                </c:when>
+                                <c:otherwise>-</c:otherwise>
+                            </c:choose>
+                        </td>
+                        <td class="text-center">${ts.creator}</td>
                     </tr>
-                </thead>
-                <tbody>
-                    <c:forEach var="ts" items="${troubleshootingList}" varStatus="status">
-                        <tr onclick="location.href='${pageContext.request.contextPath}/troubleshooting?view=view&id=${ts.id}'">
-                            <td>
-                                <a href="${pageContext.request.contextPath}/troubleshooting?view=view&id=${ts.id}" 
-                                   class="title-link" onclick="event.stopPropagation();">
-                                    ${ts.title}
-                                </a>
-                            </td>
-                            <td class="text-center">${ts.customerName}</td>
-                            <td class="text-center">
-                                <c:choose>
-                                    <c:when test="${not empty ts.occurrenceDate}">
-                                        <fmt:formatDate value="${ts.occurrenceDate}" pattern="yyyy-MM-dd" />
-                                    </c:when>
-                                    <c:otherwise>-</c:otherwise>
-                                </c:choose>
-                            </td>
-                            <td class="text-center">${ts.creator}</td>
-                            
-                        </tr>
-                    </c:forEach>
-                    
-                    <c:if test="${empty troubleshootingList}">
-                        <tr>
-                            <td colspan="4" class="empty-state">
-                                <i class="fas fa-tools"></i>
-                                <div>등록된 트러블 슈팅이 없습니다.</div>
-                            </td>
-                        </tr>
-                    </c:if>
-                </tbody>
-            </table>
-        </div>
+                </c:forEach>
+                
+                <c:if test="${empty troubleshootingList}">	
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            <i class="fas fa-tools"></i>
+                            <div>등록된 트러블 슈팅이 없습니다.</div>
+                        </td>
+                    </tr>
+                </c:if>
+            </tbody>
+        </table>
     </div>
 </div>
+
 
 <script>
     // 테이블 로딩 애니메이션

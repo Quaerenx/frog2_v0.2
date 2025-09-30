@@ -12,6 +12,7 @@ import java.util.Set;
 import com.company.model.CustomerDAO;
 import com.company.model.CustomerDTO;
 import com.company.model.CustomerDetailDAO;
+import com.company.model.VerticaEosDAO;
 import com.company.model.CustomerDetailDTO;
 import com.company.model.UserDTO;
 
@@ -107,6 +108,22 @@ public class CustomersServlet extends HttpServlet {
                 // 상세정보 조회
                 CustomerDetailDAO detailDAO = new CustomerDetailDAO();
                 CustomerDetailDTO customerDetail = detailDAO.getCustomerDetail(customerName);
+
+                // Vertica EOS 조회: 상세정보의 버전 우선, 없으면 기본 고객 테이블의 버전으로 조회
+                String versionText = null;
+                if (customerDetail != null && customerDetail.getVerticaVersion() != null && !customerDetail.getVerticaVersion().trim().isEmpty()) {
+                    versionText = customerDetail.getVerticaVersion();
+                } else if (customer != null && customer.getVerticaVersion() != null && !customer.getVerticaVersion().trim().isEmpty()) {
+                    versionText = customer.getVerticaVersion();
+                }
+                if (versionText != null) {
+                    VerticaEosDAO eosDAO = new VerticaEosDAO();
+                    java.util.Date eosDate = eosDAO.findEosDateByVersion(versionText);
+                    if (eosDate != null) {
+                        request.setAttribute("verticaEosDate", eosDate);
+                    }
+                }
+
                 request.setAttribute("customerDetail", customerDetail);
 
                 request.setAttribute("viewType", "detail");

@@ -22,7 +22,6 @@ public class CustomerDAO {
         try {
             conn = DBConnection.getConnection();
 
-            // 기본 정렬 설정
             if (sortField == null || sortField.isEmpty()) {
                 sortField = "customer_name";
             }
@@ -30,12 +29,49 @@ public class CustomerDAO {
                 sortDirection = "ASC";
             }
 
-            // 필터 조건 추가
-            String sql = "SELECT * FROM vertica_customer_info WHERE is_deleted = 1";
-            if ("maintenance".equals(filter)) {
-                sql += " AND customer_type = '정기점검 계약 고객사'";
+            String direction = "ASC";
+            if ("DESC".equalsIgnoreCase(sortDirection)) {
+                direction = "DESC";
             }
-            sql += " ORDER BY " + sortField + " " + sortDirection;
+
+            String orderByColumn;
+            switch (sortField) {
+                case "customer_name":
+                    orderByColumn = "d.customer_name";
+                    break;
+                case "vertica_version":
+                    orderByColumn = "d.vertica_version";
+                    break;
+                case "mode":
+                    orderByColumn = "d.db_mode";
+                    break;
+                case "os":
+                    orderByColumn = "d.os_info";
+                    break;
+                case "nodes":
+                    orderByColumn = "d.node_count";
+                    break;
+                case "license_size":
+                    orderByColumn = "d.license_info";
+                    break;
+                case "said":
+                    orderByColumn = "d.said";
+                    break;
+                case "manager_name":
+                    orderByColumn = "d.main_manager";
+                    break;
+                default:
+                    orderByColumn = "d.customer_name";
+                    break;
+            }
+
+            String sql =
+                "SELECT d.customer_name, d.vertica_version, d.db_mode, d.os_info, d.node_count, d.license_info, d.said, d.main_manager, d.sub_manager, d.db_name, d.customer_type " +
+                "FROM vertica_customer_detail d WHERE d.is_deleted = 1";
+            if ("maintenance".equals(filter)) {
+                sql += " AND d.customer_type = '정기점검 계약 고객사'";
+            }
+            sql += " ORDER BY " + orderByColumn + " " + direction;
 
             pstmt = conn.prepareStatement(sql);
             rs = pstmt.executeQuery();
@@ -43,24 +79,15 @@ public class CustomerDAO {
             while (rs.next()) {
                 CustomerDTO customer = new CustomerDTO();
                 customer.setCustomerName(rs.getString("customer_name"));
-                customer.setFirstIntroductionYear(rs.getString("first_introduction_year"));
                 customer.setDbName(rs.getString("db_name"));
                 customer.setVerticaVersion(rs.getString("vertica_version"));
-                customer.setVerticaEos(rs.getString("vertica_eos"));
-                customer.setMode(rs.getString("mode"));
-                customer.setOs(rs.getString("os"));
-                customer.setNodes(rs.getString("nodes"));
-                customer.setLicenseSize(rs.getString("license_size"));
-                customer.setManagerName(rs.getString("manager_name"));
-                customer.setSubManagerName(rs.getString("sub_manager_name"));
+                customer.setMode(rs.getString("db_mode"));
+                customer.setOs(rs.getString("os_info"));
+                customer.setNodes(rs.getString("node_count"));
+                customer.setLicenseSize(rs.getString("license_info"));
                 customer.setSaid(rs.getString("said"));
-                customer.setNote(rs.getString("note"));
-                customer.setOsStorageConfig(rs.getString("os_storage_config"));
-                customer.setBackupConfig(rs.getString("backup_config"));
-                customer.setBiTool(rs.getString("bi_tool"));
-                customer.setEtlTool(rs.getString("etl_tool"));
-                customer.setDbEncryption(rs.getString("db_encryption"));
-                customer.setCdcTool(rs.getString("cdc_tool"));
+                customer.setManagerName(rs.getString("main_manager"));
+                customer.setSubManagerName(rs.getString("sub_manager"));
                 customer.setCustomerType(rs.getString("customer_type"));
 
                 customerList.add(customer);
@@ -79,7 +106,7 @@ public class CustomerDAO {
         return getAllCustomers(sortField, sortDirection, "all");
     }
 
-    // 고객사 개수 조회 (필터별)
+    // 고객사 개수 조회 (필터별) - 상세 테이블 기준
     public int getCustomerCount(String filter) {
         int count = 0;
         Connection conn = null;
@@ -88,12 +115,13 @@ public class CustomerDAO {
 
         try {
             conn = DBConnection.getConnection();
-            String sql = "SELECT COUNT(*) FROM vertica_customer_info WHERE is_deleted = 1";
+            StringBuilder sb = new StringBuilder();
+            sb.append("SELECT COUNT(*) FROM vertica_customer_detail d WHERE d.is_deleted = 1");
             if ("maintenance".equals(filter)) {
-                sql += " AND customer_type = '정기점검 계약 고객사'";
+                sb.append(" AND d.customer_type = '정기점검 계약 고객사'");
             }
 
-            pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sb.toString());
             rs = pstmt.executeQuery();
 
             if (rs.next()) {
@@ -108,7 +136,7 @@ public class CustomerDAO {
         return count;
     }
 
-    // 고객사 상세 정보 조회 (활성 상태만)
+    // 고객사 상세 정보 조회 (상세 테이블 기준)
     public CustomerDTO getCustomerByName(String customerName) {
         CustomerDTO customer = null;
         Connection conn = null;
@@ -117,7 +145,8 @@ public class CustomerDAO {
 
         try {
             conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM vertica_customer_info WHERE customer_name = ? AND is_deleted = 1";
+            String sql = "SELECT customer_name, vertica_version, db_mode, os_info, node_count, license_info, said, main_manager, sub_manager, db_name, customer_type " +
+                         "FROM vertica_customer_detail WHERE customer_name = ?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, customerName);
             rs = pstmt.executeQuery();
@@ -125,24 +154,15 @@ public class CustomerDAO {
             if (rs.next()) {
                 customer = new CustomerDTO();
                 customer.setCustomerName(rs.getString("customer_name"));
-                customer.setFirstIntroductionYear(rs.getString("first_introduction_year"));
                 customer.setDbName(rs.getString("db_name"));
                 customer.setVerticaVersion(rs.getString("vertica_version"));
-                customer.setVerticaEos(rs.getString("vertica_eos"));
-                customer.setMode(rs.getString("mode"));
-                customer.setOs(rs.getString("os"));
-                customer.setNodes(rs.getString("nodes"));
-                customer.setLicenseSize(rs.getString("license_size"));
-                customer.setManagerName(rs.getString("manager_name"));
-                customer.setSubManagerName(rs.getString("sub_manager_name"));
+                customer.setMode(rs.getString("db_mode"));
+                customer.setOs(rs.getString("os_info"));
+                customer.setNodes(rs.getString("node_count"));
+                customer.setLicenseSize(rs.getString("license_info"));
+                customer.setManagerName(rs.getString("main_manager"));
+                customer.setSubManagerName(rs.getString("sub_manager"));
                 customer.setSaid(rs.getString("said"));
-                customer.setNote(rs.getString("note"));
-                customer.setOsStorageConfig(rs.getString("os_storage_config"));
-                customer.setBackupConfig(rs.getString("backup_config"));
-                customer.setBiTool(rs.getString("bi_tool"));
-                customer.setEtlTool(rs.getString("etl_tool"));
-                customer.setDbEncryption(rs.getString("db_encryption"));
-                customer.setCdcTool(rs.getString("cdc_tool"));
                 customer.setCustomerType(rs.getString("customer_type"));
             }
         } catch (SQLException | ClassNotFoundException e) {
@@ -154,7 +174,7 @@ public class CustomerDAO {
         return customer;
     }
 
-    // 고객사 정보 업데이트 (활성 상태인 데이터만)
+    // 고객사 정보 업데이트 (상세 테이블 기준)
     public boolean updateCustomer(CustomerDTO customer) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -162,33 +182,22 @@ public class CustomerDAO {
 
         try {
             conn = DBConnection.getConnection();
-            String sql = "UPDATE vertica_customer_info SET first_introduction_year = ?, db_name = ?, "
-                    + "vertica_version = ?, vertica_eos = ?, mode = ?, os = ?, nodes = ?, license_size = ?, "
-                    + "manager_name = ?, sub_manager_name = ?, said = ?, note = ?, os_storage_config = ?, "
-                    + "backup_config = ?, bi_tool = ?, etl_tool = ?, db_encryption = ?, cdc_tool = ?, "
-                    + "customer_type = ? WHERE customer_name = ? AND is_deleted = 1";
+            String sql = "UPDATE vertica_customer_detail SET db_name = ?, vertica_version = ?, db_mode = ?, os_info = ?, "
+                    + "node_count = ?, license_info = ?, main_manager = ?, sub_manager = ?, said = ?, customer_type = ? "
+                    + "WHERE customer_name = ?";
 
             pstmt = conn.prepareStatement(sql);
-            setStringOrNull(pstmt, 1, customer.getFirstIntroductionYear());
-            setStringOrNull(pstmt, 2, customer.getDbName());
-            setStringOrNull(pstmt, 3, customer.getVerticaVersion());
-            setStringOrNull(pstmt, 4, customer.getVerticaEos());
-            setStringOrNull(pstmt, 5, customer.getMode());
-            setStringOrNull(pstmt, 6, customer.getOs());
-            setStringOrNull(pstmt, 7, customer.getNodes());
-            setStringOrNull(pstmt, 8, customer.getLicenseSize());
-            setStringOrNull(pstmt, 9, customer.getManagerName());
-            setStringOrNull(pstmt, 10, customer.getSubManagerName());
-            setStringOrNull(pstmt, 11, customer.getSaid());
-            setStringOrNull(pstmt, 12, customer.getNote());
-            setStringOrNull(pstmt, 13, customer.getOsStorageConfig());
-            setStringOrNull(pstmt, 14, customer.getBackupConfig());
-            setStringOrNull(pstmt, 15, customer.getBiTool());
-            setStringOrNull(pstmt, 16, customer.getEtlTool());
-            setStringOrNull(pstmt, 17, customer.getDbEncryption());
-            setStringOrNull(pstmt, 18, customer.getCdcTool());
-            setStringOrNull(pstmt, 19, customer.getCustomerType());
-            pstmt.setString(20, customer.getCustomerName());
+            setStringOrNull(pstmt, 1, customer.getDbName());
+            setStringOrNull(pstmt, 2, customer.getVerticaVersion());
+            setStringOrNull(pstmt, 3, customer.getMode());
+            setStringOrNull(pstmt, 4, customer.getOs());
+            setStringOrNull(pstmt, 5, customer.getNodes());
+            setStringOrNull(pstmt, 6, customer.getLicenseSize());
+            setStringOrNull(pstmt, 7, customer.getManagerName());
+            setStringOrNull(pstmt, 8, customer.getSubManagerName());
+            setStringOrNull(pstmt, 9, customer.getSaid());
+            setStringOrNull(pstmt, 10, customer.getCustomerType());
+            pstmt.setString(11, customer.getCustomerName());
 
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
@@ -202,7 +211,7 @@ public class CustomerDAO {
         return success;
     }
 
-    // 새 고객사 추가 (is_deleted = 1로 활성 상태로 추가)
+    // 새 고객사 추가 (상세 테이블에 삽입)
     public boolean addCustomer(CustomerDTO customer) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -210,32 +219,21 @@ public class CustomerDAO {
 
         try {
             conn = DBConnection.getConnection();
-            String sql = "INSERT INTO vertica_customer_info (customer_name, first_introduction_year, db_name, "
-                    + "vertica_version, vertica_eos, mode, os, nodes, license_size, manager_name, sub_manager_name, "
-                    + "said, note, os_storage_config, backup_config, bi_tool, etl_tool, db_encryption, cdc_tool, "
-                    + "customer_type, is_deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
+            String sql = "INSERT INTO vertica_customer_detail (customer_name, db_name, vertica_version, db_mode, os_info, node_count, license_info, main_manager, sub_manager, said, customer_type, is_deleted) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
 
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, customer.getCustomerName());
-            setStringOrNull(pstmt, 2, customer.getFirstIntroductionYear());
-            setStringOrNull(pstmt, 3, customer.getDbName());
-            setStringOrNull(pstmt, 4, customer.getVerticaVersion());
-            setStringOrNull(pstmt, 5, customer.getVerticaEos());
-            setStringOrNull(pstmt, 6, customer.getMode());
-            setStringOrNull(pstmt, 7, customer.getOs());
-            setStringOrNull(pstmt, 8, customer.getNodes());
-            setStringOrNull(pstmt, 9, customer.getLicenseSize());
-            setStringOrNull(pstmt, 10, customer.getManagerName());
-            setStringOrNull(pstmt, 11, customer.getSubManagerName());
-            setStringOrNull(pstmt, 12, customer.getSaid());
-            setStringOrNull(pstmt, 13, customer.getNote());
-            setStringOrNull(pstmt, 14, customer.getOsStorageConfig());
-            setStringOrNull(pstmt, 15, customer.getBackupConfig());
-            setStringOrNull(pstmt, 16, customer.getBiTool());
-            setStringOrNull(pstmt, 17, customer.getEtlTool());
-            setStringOrNull(pstmt, 18, customer.getDbEncryption());
-            setStringOrNull(pstmt, 19, customer.getCdcTool());
-            setStringOrNull(pstmt, 20, customer.getCustomerType());
+            setStringOrNull(pstmt, 2, customer.getDbName());
+            setStringOrNull(pstmt, 3, customer.getVerticaVersion());
+            setStringOrNull(pstmt, 4, customer.getMode());
+            setStringOrNull(pstmt, 5, customer.getOs());
+            setStringOrNull(pstmt, 6, customer.getNodes());
+            setStringOrNull(pstmt, 7, customer.getLicenseSize());
+            setStringOrNull(pstmt, 8, customer.getManagerName());
+            setStringOrNull(pstmt, 9, customer.getSubManagerName());
+            setStringOrNull(pstmt, 10, customer.getSaid());
+            setStringOrNull(pstmt, 11, customer.getCustomerType());
 
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
@@ -249,7 +247,7 @@ public class CustomerDAO {
         return success;
     }
 
-    // 고객사 논리적 삭제 (is_deleted = 0으로 변경)
+    // 고객사 삭제 (상세 테이블에서 삭제)
     public boolean deleteCustomer(String customerName) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -257,7 +255,7 @@ public class CustomerDAO {
 
         try {
             conn = DBConnection.getConnection();
-            String sql = "UPDATE vertica_customer_info SET is_deleted = 0 WHERE customer_name = ? AND is_deleted = 1";
+            String sql = "UPDATE vertica_customer_detail SET is_deleted = 0 WHERE customer_name = ?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, customerName);
 

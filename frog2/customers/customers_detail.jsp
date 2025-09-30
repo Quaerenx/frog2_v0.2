@@ -50,6 +50,14 @@
 				</a>
 			</div>
 		</jsp:attribute>
+        <jsp:attribute name="extra">
+            <c:if test="${not empty verticaEosDate}">
+                <div class="alert alert-warning" style="margin-top:8px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Vertica EOS 일자: <strong><fmt:formatDate value="${verticaEosDate}" pattern="yyyy-MM-dd"/></strong>
+                </div>
+            </c:if>
+        </jsp:attribute>
     </t:pageHeader>
     
     <!-- 성공/에러 메시지 표시 -->
@@ -397,7 +405,7 @@
 <script>
 function editCustomer(customerName) {
 	var encodedName = encodeURIComponent(customerName);
-	window.location.href = '${pageContext.request.contextPath}/customers?view=edit&name=' + encodedName;
+	window.location.href = '${pageContext.request.contextPath}/customers?view=editDetail&customerName=' + encodedName;
 }
 
 function deleteCustomer(customerName) {

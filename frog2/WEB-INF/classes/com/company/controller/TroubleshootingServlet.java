@@ -42,8 +42,15 @@ public class TroubleshootingServlet extends HttpServlet {
         TroubleshootingDAO tsDAO = new TroubleshootingDAO();
 
         if ("list".equals(viewType)) {
-            // 목록 조회
-            List<TroubleshootingDTO> troubleshootingList = tsDAO.getAllTroubleshooting();
+            // 목록/검색 조회
+            String q = request.getParameter("q");
+            List<TroubleshootingDTO> troubleshootingList;
+            if (q != null && !q.trim().isEmpty()) {
+                troubleshootingList = tsDAO.searchTroubleshooting(q.trim());
+                request.setAttribute("q", q.trim());
+            } else {
+                troubleshootingList = tsDAO.getAllTroubleshooting();
+            }
             if (troubleshootingList == null) {
                 troubleshootingList = new java.util.ArrayList<>();
             }

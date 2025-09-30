@@ -94,8 +94,8 @@ public class MaintenanceRecordDAO {
 
         try {
             conn = DBConnection.getConnection();
-            String sql = "SELECT DISTINCT customer_name FROM vertica_customer_info " +
-                        "WHERE (manager_name = ? OR sub_manager_name = ?) AND is_deleted = 1 " +
+            String sql = "SELECT DISTINCT customer_name FROM vertica_customer_detail " +
+                        "WHERE (main_manager = ? OR sub_manager = ?) " +
                         "ORDER BY customer_name";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, inspectorName);

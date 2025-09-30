@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${pageTitle} - 게시판 시스템</title>
+    <!-- Favicon -->
+    <link rel="icon" href="${pageContext.request.contextPath}/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.ico" type="image/x-icon">
     <!-- 기본 스타일시트 임포트 -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/main_style.css">
     <!-- 컴포넌트 스타일시트 -->

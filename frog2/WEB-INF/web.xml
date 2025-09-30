@@ -8,7 +8,7 @@
     
     <!-- 세션 설정 -->
     <session-config>
-        <session-timeout>30</session-timeout> <!-- 30분 -->
+        <session-timeout>360</session-timeout> <!-- 360분 (6시간) -->
     </session-config>
     
     <!-- 시작 페이지 설정 -->
@@ -52,6 +52,15 @@
     <servlet-mapping>
         <servlet-name>DashboardServlet</servlet-name>
         <url-pattern>/dashboard</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Dashboard2Servlet</servlet-name>
+        <servlet-class>com.company.controller.DashboardServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Dashboard2Servlet</servlet-name>
+        <url-pattern>/dashboard2</url-pattern>
     </servlet-mapping>
     
     <servlet>

@@ -3,6 +3,7 @@
 <%@ attribute name="title" fragment="true" required="true" %>
 <%@ attribute name="subtitle" fragment="true" required="false" %>
 <%@ attribute name="actions" fragment="true" required="false" %>
+<%@ attribute name="extra" fragment="true" required="false" %>
 
 <div class="page-header">
   <div class="d-flex justify-content-between align-items-center">
@@ -20,5 +21,10 @@
       </c:if>
     </div>
   </div>
+  <c:if test="${not empty extra}">
+    <div style="margin-top:8px;">
+      <jsp:invoke fragment="extra"/>
+    </div>
+  </c:if>
   </div>
 

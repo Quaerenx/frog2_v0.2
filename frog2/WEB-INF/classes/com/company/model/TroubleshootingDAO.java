@@ -56,6 +56,69 @@ public class TroubleshootingDAO {
         return troubleshootingList;
     }
 
+    // 검색: 제목/고객사/작성자 및 본문 필드까지 ILIKE 검색
+    public List<TroubleshootingDTO> searchTroubleshooting(String query) {
+        List<TroubleshootingDTO> troubleshootingList = new ArrayList<>();
+        if (query == null || query.trim().isEmpty()) {
+            return troubleshootingList;
+        }
+
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            String sql =
+                "SELECT id, title, customer_name, occurrence_date, creator, create_date " +
+                "FROM troubleshooting " +
+                "WHERE title ILIKE ? " +
+                "   OR customer_name ILIKE ? " +
+                "   OR creator ILIKE ? " +
+                "   OR CAST(SUBSTR(overview,1,65000) AS VARCHAR(65000)) ILIKE CAST(? AS VARCHAR(65000)) " +
+                "   OR CAST(SUBSTR(cause_analysis,1,65000) AS VARCHAR(65000)) ILIKE CAST(? AS VARCHAR(65000)) " +
+                "   OR CAST(SUBSTR(error_content,1,65000) AS VARCHAR(65000)) ILIKE CAST(? AS VARCHAR(65000)) " +
+                "   OR CAST(SUBSTR(action_taken,1,65000) AS VARCHAR(65000)) ILIKE CAST(? AS VARCHAR(65000)) " +
+                "   OR CAST(SUBSTR(script_content,1,65000) AS VARCHAR(65000)) ILIKE CAST(? AS VARCHAR(65000)) " +
+                "   OR CAST(SUBSTR(note,1,65000) AS VARCHAR(65000)) ILIKE CAST(? AS VARCHAR(65000)) " +
+                "ORDER BY create_date DESC";
+
+            pstmt = conn.prepareStatement(sql);
+            String like = "%" + query.trim() + "%";
+            for (int i = 1; i <= 9; i++) {
+                pstmt.setString(i, like);
+            }
+
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                TroubleshootingDTO ts = new TroubleshootingDTO();
+                ts.setId(rs.getInt("id"));
+                ts.setTitle(rs.getString("title"));
+                ts.setCustomerName(rs.getString("customer_name"));
+
+                Timestamp occurrenceTs = rs.getTimestamp("occurrence_date");
+                if (occurrenceTs != null) {
+                    ts.setOccurrenceDate(new java.util.Date(occurrenceTs.getTime()));
+                }
+
+                ts.setCreator(rs.getString("creator"));
+
+                Timestamp createTs = rs.getTimestamp("create_date");
+                if (createTs != null) {
+                    ts.setCreateDate(new java.util.Date(createTs.getTime()));
+                }
+
+                troubleshootingList.add(ts);
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.close(rs, pstmt, conn);
+        }
+
+        return troubleshootingList;
+    }
+
     // 특정 트러블 슈팅 상세 조회
     public TroubleshootingDTO getTroubleshootingById(int id) {
         TroubleshootingDTO ts = null;

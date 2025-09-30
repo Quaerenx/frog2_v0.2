@@ -33,6 +33,13 @@ public class DashboardServlet extends HttpServlet {
 		UserDTO user = (UserDTO) session.getAttribute("user");
 		request.setAttribute("user", user);
 
+		// /dashboard2 요청은 새로운 디자인 페이지로 바로 포워드
+		String servletPath = request.getServletPath();
+		if ("/dashboard2".equals(servletPath)) {
+			request.getRequestDispatcher("/dashboard2.jsp").forward(request, response);
+			return;
+		}
+
 		// 대시보드 메뉴 구성 정보 설정 (카테고리별)
 		Map<String, List<MenuItem>> dashboardMenus = new HashMap<>();
 

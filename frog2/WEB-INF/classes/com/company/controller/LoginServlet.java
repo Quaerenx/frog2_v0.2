@@ -42,7 +42,7 @@ public class LoginServlet extends HttpServlet {
 	            // 인증 성공: 세션 생성 및 사용자 정보 저장
 	            HttpSession session = request.getSession();
 	            session.setAttribute("user", user);
-	            session.setMaxInactiveInterval(30 * 60); // 세션 유효 시간 설정 (30분)
+	            session.setMaxInactiveInterval(360 * 60); // 세션 유효 시간 설정 (6시간)
 
 	            // 대시보드로 리다이렉트
 	            response.sendRedirect("dashboard");

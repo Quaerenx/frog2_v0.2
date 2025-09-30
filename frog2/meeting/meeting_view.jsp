@@ -50,47 +50,6 @@
         <c:remove var="error" scope="session" />
     </c:if>
     
-    <!-- 회의록 헤더 -->
-    <div class="meeting-header">
-        <h1 class="meeting-title">${meeting.title}</h1>
-        
-        <div class="meeting-meta">
-            <div class="meta-item">
-                <i class="fas fa-tag"></i>
-                <span class="type-badge type-${meeting.meetingType.toLowerCase()}">${meeting.meetingType}</span>
-            </div>
-            <div class="meta-item">
-                <i class="fas fa-calendar"></i>
-                <fmt:formatDate value="${meeting.meetingDatetime}" pattern="yyyy년 MM월 dd일 HH:mm"/>
-            </div>
-            <div class="meta-item">
-                <i class="fas fa-user"></i>
-                ${meeting.authorName}
-            </div>
-            <div class="meta-item">
-                <i class="fas fa-eye"></i>
-                조회 ${meeting.viewCount}
-            </div>
-            <div class="meta-item">
-                <i class="fas fa-clock"></i>
-                <fmt:formatDate value="${meeting.createdAt}" pattern="yyyy-MM-dd HH:mm"/>
-            </div>
-        </div>
-        
-        <c:if test="${meeting.authorId == user.userId}">
-            <div class="meeting-actions">
-                <a href="${pageContext.request.contextPath}/meeting?view=edit&id=${meeting.meetingId}" class="btn btn-primary">
-                    <i class="fas fa-edit"></i>
-                    수정하기
-                </a>
-                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
-                    <i class="fas fa-trash"></i>
-                    삭제하기
-                </button>
-            </div>
-        </c:if>
-    </div>
-    
     <!-- 회의록 내용 -->
     <div class="meeting-content">
         <div class="content-header">
