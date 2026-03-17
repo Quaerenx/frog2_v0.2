@@ -3,7 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<c:set var="pageTitle" value="정기점검 이력 - ${customerName}" scope="request" />
+<c:set var="pageTitle" value="정기점검 이력 - ${fn:escapeXml(customerName)}" scope="request" />
 <c:set var="pageBodyClass" value="page-1050 page-maintenance" scope="request" />
 <%@ taglib prefix="t" tagdir="/WEB-INF/tags" %>
 <%@ include file="/includes/header.jsp" %>
@@ -428,18 +428,22 @@
 </style>
 
 <div class="maintenance-history">
+    <c:url value="/maintenance" var="addHistoryUrl">
+        <c:param name="view" value="add"/>
+        <c:param name="customerName" value="${customerName}"/>
+    </c:url>
     <t:pageHeader>
-        <jsp:attribute name="title"><i class="fas fa-building"></i> ${customerName}</jsp:attribute>
+        <jsp:attribute name="title"><i class="fas fa-building"></i> <c:out value="${customerName}" /></jsp:attribute>
         <jsp:attribute name="subtitle">
             <c:if test="${not empty customer}">
                 <!-- <span class="detail-item"><i class="fas fa-calendar"></i> 도입년도: ${customer.firstIntroductionYear}</span>  -->
-                <span class="detail-item"><i class="fas fa-database"></i> DB: ${customer.dbName}</span>
-                <span class="detail-item"><i class="fas fa-code-branch"></i> 버전: ${customer.verticaVersion}</span>
-                <span class="detail-item"><i class="fas fa-user"></i> 담당자: ${customer.managerName}</span>
+                <span class="detail-item"><i class="fas fa-database"></i> DB: <c:out value="${customer.dbName}" /></span>
+                <span class="detail-item"><i class="fas fa-code-branch"></i> 버전: <c:out value="${customer.verticaVersion}" /></span>
+                <span class="detail-item"><i class="fas fa-user"></i> 담당자: <c:out value="${customer.managerName}" /></span>
             </c:if>
         </jsp:attribute>
         <jsp:attribute name="actions">
-            <a href="${pageContext.request.contextPath}/maintenance?view=add&customerName=${customerName}" class="btn-min"><i class="fas fa-plus"></i> 새 점검 이력 추가</a>
+            <a href="${addHistoryUrl}" class="btn-min"><i class="fas fa-plus"></i> 새 점검 이력 추가</a>
             <a href="${pageContext.request.contextPath}/maintenance?view=cards" class="btn-min"><i class="fas fa-arrow-left"></i> 목록으로</a>
         </jsp:attribute>
     </t:pageHeader>
@@ -475,7 +479,7 @@
     <c:if test="${not empty sessionScope.message}">
         <div class="alert alert-success">
             <i class="fas fa-check-circle"></i>
-            ${sessionScope.message}
+            <c:out value="${sessionScope.message}" />
         </div>
         <c:remove var="message" scope="session" />
     </c:if>
@@ -483,7 +487,7 @@
     <c:if test="${not empty sessionScope.error}">
         <div class="alert alert-danger">
             <i class="fas fa-exclamation-circle"></i>
-            ${sessionScope.error}
+            <c:out value="${sessionScope.error}" />
         </div>
         <c:remove var="error" scope="session" />
     </c:if>
@@ -511,7 +515,7 @@
                                     <fmt:formatDate value="${record.inspectionDate}" pattern="yyyy년 MM월 dd일"/>
                                 </div>
                                 <div class="inspector-info">
-                                    <div class="inspector-name">${record.inspectorName}</div>
+                                    <div class="inspector-name"><c:out value="${record.inspectorName}" /></div>
                                     <div class="timestamp-info">
                                         등록: <fmt:formatDate value="${record.createdAt}" pattern="MM/dd HH:mm"/>
                                     </div>
@@ -524,7 +528,7 @@
                                     <span class="detail-value">
                                         <c:choose>
                                             <c:when test="${not empty record.verticaVersion}">
-                                                <span class="version-tag">${record.verticaVersion}</span>
+                                                <span class="version-tag"><c:out value="${record.verticaVersion}" /></span>
                                             </c:when>
                                             <c:otherwise>-</c:otherwise>
                                         </c:choose>
@@ -535,7 +539,7 @@
                                     <span class="detail-value">
                                         <c:choose>
                                             <c:when test="${not empty licenseSummaries[record.maintenanceId]}">
-                                                ${licenseSummaries[record.maintenanceId]}
+                                                <c:out value="${licenseSummaries[record.maintenanceId]}" />
                                             </c:when>
                                             <c:otherwise>-</c:otherwise>
                                         </c:choose>
@@ -554,8 +558,8 @@
                     <div class="empty-history">
                         <i class="fas fa-clipboard"></i>
                         <h3>정기점검 이력이 없습니다</h3>
-                        <p>${customerName}의 정기점검 이력이 아직 등록되지 않았습니다.</p>
-                        <a href="${pageContext.request.contextPath}/maintenance?view=add&customerName=${customerName}" 
+                        <p><c:out value="${customerName}" />의 정기점검 이력이 아직 등록되지 않았습니다.</p>
+                        <a href="${addHistoryUrl}"
                            class="btn btn-primary">
                             <i class="fas fa-plus"></i>
                             첫 번째 점검 이력 추가하기

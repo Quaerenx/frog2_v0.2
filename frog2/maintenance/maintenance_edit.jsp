@@ -23,7 +23,7 @@
             <form id="deleteFormHeader" method="post" action="${pageContext.request.contextPath}/maintenance" style="display:inline; margin-right:8px;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="maintenance_id" value="${record.maintenanceId}">
-                <input type="hidden" name="customer_name" value="${record.customerName}">
+                <input type="hidden" name="customer_name" value="<c:out value='${record.customerName}'/>">
                 <button type="submit" class="btn-min danger"><i class="fas fa-trash"></i> 삭제</button>
             </form>
             <c:url value="/maintenance" var="headerHistoryUrl">
@@ -37,7 +37,7 @@
     <!-- 오류 메시지 -->
     <c:if test="${not empty error}">
         <div class="alert alert-danger">
-            <i class="fas fa-exclamation-circle"></i> ${error}
+            <i class="fas fa-exclamation-circle"></i> <c:out value="${error}" />
         </div>
     </c:if>
     
@@ -46,6 +46,8 @@
         <form method="post" action="${pageContext.request.contextPath}/maintenance">
             <input type="hidden" name="action" value="update">
             <input type="hidden" name="maintenance_id" value="${record.maintenanceId}">
+            <input type="hidden" id="current_customer_value" value="<c:out value='${record.customerName}'/>">
+            <input type="hidden" id="current_inspector_value" value="<c:out value='${record.inspectorName}'/>">
             
             <!-- 기본 정보 -->
             <div class="section-title">기본 정보</div>
@@ -74,7 +76,7 @@
                 <div class="form-group">
                     <label for="vertica_version">Vertica 버전</label>
                     <input type="text" id="vertica_version" name="vertica_version" 
-                           value="${record.verticaVersion}" placeholder="예: 12.0.4">
+                           value="<c:out value='${record.verticaVersion}'/>" placeholder="예: 12.0.4">
                 </div>
             </div>
             
@@ -84,15 +86,15 @@
                 <div class="form-group">
                     <label for="license_size_gb">라이선스 크기 (TB)</label>
                     <!-- varchar(50)로 변경됨: 자유 입력, 최대 50자 -->
-                    <input type="text" id="license_size_gb" name="license_size_gb" maxlength="50" value="${record.licenseSizeGb}" placeholder="예: 4 또는 4TB">
+                    <input type="text" id="license_size_gb" name="license_size_gb" maxlength="50" value="<c:out value='${record.licenseSizeGb}'/>" placeholder="예: 4 또는 4TB">
                 </div>
                 <div class="form-group">
                     <label for="license_usage_size">라이선스 사용량 (TB)</label>
-                    <input type="text" id="license_usage_size" name="license_usage_size" maxlength="50" value="${record.licenseUsageSize}" placeholder="예: 3.5 또는 3.5TB">
+                    <input type="text" id="license_usage_size" name="license_usage_size" maxlength="50" value="<c:out value='${record.licenseUsageSize}'/>" placeholder="예: 3.5 또는 3.5TB">
                 </div>
                 <div class="form-group">
                     <label for="license_usage_pct">라이선스 사용률 (%)</label>
-                    <input type="text" id="license_usage_pct" name="license_usage_pct" maxlength="50" value="${record.licenseUsagePct}" placeholder="예: 75 또는 75%">
+                    <input type="text" id="license_usage_pct" name="license_usage_pct" maxlength="50" value="<c:out value='${record.licenseUsagePct}'/>" placeholder="예: 75 또는 75%">
                 </div>
             </div>
             
@@ -103,7 +105,7 @@
                 <div class="form-group full-width">
                     <label for="note">비고 및 점검 내용</label>
                     <textarea id="note" name="note" rows="8" 
-                              placeholder="점검 내용, 발견된 이슈, 조치사항 등을 입력해주세요.">${record.note}</textarea>
+                              placeholder="점검 내용, 발견된 이슈, 조치사항 등을 입력해주세요."><c:out value="${record.note}" /></textarea>
                 </div>
             </div>
             
@@ -167,6 +169,16 @@ function loadCustomersAndInspectors() {
         });
 }
 
+function getCurrentCustomer() {
+    const input = document.getElementById('current_customer_value');
+    return input ? input.value : '';
+}
+
+function getCurrentInspector() {
+    const input = document.getElementById('current_inspector_value');
+    return input ? input.value : '';
+}
+
 // 고객사 선택박스 채우기
 function populateCustomers(customers) {
     const customerSelect = document.getElementById('customer_name');
@@ -195,8 +207,8 @@ function addDefaultOptions() {
     const inspectorSelect = document.getElementById('inspector_name');
     
     // 현재 값들을 기본 옵션으로 추가
-    const currentCustomer = '${record.customerName}';
-    const currentInspector = '${record.inspectorName}';
+    const currentCustomer = getCurrentCustomer();
+    const currentInspector = getCurrentInspector();
     
     if (currentCustomer) {
         const option = document.createElement('option');
@@ -215,8 +227,8 @@ function addDefaultOptions() {
 
 // 현재 값들 설정
 function setCurrentValues() {
-    const currentCustomer = '${record.customerName}';
-    const currentInspector = '${record.inspectorName}';
+    const currentCustomer = getCurrentCustomer();
+    const currentInspector = getCurrentInspector();
     
     if (currentCustomer) {
         document.getElementById('customer_name').value = currentCustomer;
