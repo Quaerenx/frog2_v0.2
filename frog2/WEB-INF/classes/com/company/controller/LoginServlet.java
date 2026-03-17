@@ -1,6 +1,8 @@
 package com.company.controller;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.company.model.UserDAO;
 import com.company.model.UserDTO;
@@ -11,9 +13,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-// @WebServlet("/login") - web.xml에서 매핑하므로 주석 처리
-public class LoginServlet extends HttpServlet {
+public class LoginServlet extends HttpServlet { // @WebServlet("/login") - web.xml에서 매핑하므로 주석 처리
     private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(LoginServlet.class.getName());
 
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -39,8 +41,12 @@ public class LoginServlet extends HttpServlet {
         try {
             UserDTO user = userDAO.authenticateUser(userId, password);
 	        if (user != null) {
-	            // 인증 성공: 세션 생성 및 사용자 정보 저장
-	            HttpSession session = request.getSession();
+	            // 인증 성공: 기존 세션 무효화 후 신규 세션 발급 (세션 고정 방지)
+                HttpSession old = request.getSession(false);
+                if (old != null) {
+                    try { old.invalidate(); } catch (IllegalStateException ignore) {}
+                }
+	            HttpSession session = request.getSession(true);
 	            session.setAttribute("user", user);
 	            session.setMaxInactiveInterval(360 * 60); // 세션 유효 시간 설정 (6시간)
 
@@ -55,8 +61,7 @@ public class LoginServlet extends HttpServlet {
             // DAO에서 발생한 예외 처리
             request.setAttribute("errorMessage", "시스템 오류가 발생했습니다. 관리자에게 문의하세요.");
             // 로그 기록
-            System.err.println("로그인 처리 중 오류 발생: " + e.getMessage());
-            e.printStackTrace();
+            log.log(Level.SEVERE, "로그인 처리 중 오류 발생", e);
             request.getRequestDispatcher("login.jsp").forward(request, response);
         }
     }

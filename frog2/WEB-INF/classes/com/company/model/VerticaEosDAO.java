@@ -10,7 +10,7 @@ import com.company.util.DBConnection;
 
 public class VerticaEosDAO {
 
-    // 고객 상세의 버전 문자열을 받아 ILIKE 매칭으로 EOS 일자를 조회
+    // 고객 ?�세??버전 문자?�을 받아 ILIKE 매칭?�로 EOS ?�자�?조회
     public java.util.Date findEosDateByVersion(String versionText) {
         if (versionText == null || versionText.trim().isEmpty()) {
             return null;
@@ -22,7 +22,7 @@ public class VerticaEosDAO {
         try {
             conn = DBConnection.getConnection();
 
-            // 스키마 감지 (여러 스키마에 동명 테이블 있는 경우를 대비)
+            // ?�키�?감�? (?�러 ?�키마에 ?�명 ?�이�??�는 경우�??��?
             String schemaDetectSql = "SELECT table_schema FROM v_catalog.tables " +
                 "WHERE lower(table_name) = 'vertica_eos' ORDER BY CASE lower(table_schema) WHEN 'public' THEN 0 ELSE 1 END LIMIT 1";
             pstmt = conn.prepareStatement(schemaDetectSql);
@@ -37,7 +37,7 @@ public class VerticaEosDAO {
                 ? ("\"" + schemaName + "\".\"vertica_eos\"")
                 : "vertica_eos";
 
-            // 후보 컬럼들 순차 시도: vertica_version -> version
+            // ?�보 컬럼???�차 ?�도: vertica_version -> version
             String[] candidateCols = new String[] { "vertica_version", "version" };
             for (String col : candidateCols) {
                 String quotedCol = "\"" + col + "\"";
@@ -51,7 +51,7 @@ public class VerticaEosDAO {
                 try {
                     pstmt = conn.prepareStatement(sql);
                 } catch (SQLException prepareEx) {
-                    // 컬럼이 없을 때 등: 다음 후보로
+                    // 컬럼???�을 ???? ?�음 ?�보�?
                     DBConnection.close(pstmt);
                     continue;
                 }
@@ -67,7 +67,7 @@ public class VerticaEosDAO {
                 }
                 DBConnection.close(rs, pstmt);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);

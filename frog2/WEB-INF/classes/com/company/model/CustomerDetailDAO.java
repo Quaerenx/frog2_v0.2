@@ -10,7 +10,7 @@ import com.company.util.DBConnection;
 
 public class CustomerDetailDAO {
 
-    // 고객사 상세정보 조회
+    // 고객???�세?�보 조회
     public CustomerDetailDTO getCustomerDetail(String customerName) {
         CustomerDetailDTO detail = null;
         Connection conn = null;
@@ -27,7 +27,7 @@ public class CustomerDetailDAO {
             if (rs.next()) {
                 detail = mapRowToDetail(rs);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -36,17 +36,17 @@ public class CustomerDetailDAO {
         return detail;
     }
 
-    // 스테이징 상세정보 조회
+    // ?�테?�징 ?�세?�보 조회
     public CustomerDetailDTO getCustomerDetailStg(String customerName) {
         return getCustomerDetailFromTable(customerName, "vertica_customer_detail_stg");
     }
 
-    // 개발 상세정보 조회
+    // 개발 ?�세?�보 조회
     public CustomerDetailDTO getCustomerDetailDev(String customerName) {
         return getCustomerDetailFromTable(customerName, "vertica_customer_detail_dev");
     }
 
-    // 공통: 특정 테이블에서 상세정보 조회
+    // 공통: ?�정 ?�이블에???�세?�보 조회
     private CustomerDetailDTO getCustomerDetailFromTable(String customerName, String tableName) {
         CustomerDetailDTO detail = null;
         Connection conn = null;
@@ -63,7 +63,7 @@ public class CustomerDetailDAO {
             if (rs.next()) {
                 detail = mapRowToDetail(rs);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -97,7 +97,7 @@ public class CustomerDetailDAO {
 
         detail.setIntroductionYear(rs.getString("introduction_year"));
 
-        // Vertica 정보
+        // Vertica ?�보
         detail.setDbName(rs.getString("db_name"));
         detail.setDbMode(rs.getString("db_mode"));
         detail.setVerticaVersion(rs.getString("vertica_version"));
@@ -114,7 +114,7 @@ public class CustomerDetailDAO {
         detail.setCustomResourcePoolYn(rs.getString("custom_resource_pool_yn"));
         detail.setBackupNote(rs.getString("backup_note"));
 
-        // 환경 정보
+        // ?�경 ?�보
         detail.setOsInfo(rs.getString("os_info"));
         detail.setMemoryInfo(rs.getString("memory_info"));
         detail.setInfraType(rs.getString("infra_type"));
@@ -132,13 +132,12 @@ public class CustomerDetailDAO {
         detail.setStorageYn(rs.getString("storage_yn"));
         detail.setStorageNetwork(rs.getString("storage_network"));
 
-        // 외부 솔루션
-        detail.setEtlTool(rs.getString("etl_tool"));
+        // ?��? ?�루??        detail.setEtlTool(rs.getString("etl_tool"));
         detail.setBiTool(rs.getString("bi_tool"));
         detail.setDbEncryption(rs.getString("db_encryption"));
         detail.setCdcTool(rs.getString("cdc_tool"));
 
-        // 기타
+        // 기�?
         Timestamp eosTs = rs.getTimestamp("eos_date");
         if (eosTs != null) {
             detail.setEosDate(new java.util.Date(eosTs.getTime()));
@@ -149,9 +148,9 @@ public class CustomerDetailDAO {
         return detail;
     }
 
-    // 고객사 상세정보 저장 또는 업데이트
+    // 고객???�세?�보 ?�???�는 ?�데?�트
     public boolean saveOrUpdateCustomerDetail(CustomerDetailDTO detail) {
-        // 먼저 기존 데이터가 있는지 확인
+        // 먼�? 기존 ?�이?��? ?�는지 ?�인
         CustomerDetailDTO existing = getCustomerDetail(detail.getCustomerName());
 
         if (existing != null) {
@@ -161,7 +160,7 @@ public class CustomerDetailDAO {
         }
     }
 
-    // 스테이징 저장 또는 업데이트
+    // ?�테?�징 ?�???�는 ?�데?�트
     public boolean saveOrUpdateCustomerDetailStg(CustomerDetailDTO detail) {
         CustomerDetailDTO existing = getCustomerDetailFromTable(detail.getCustomerName(), "vertica_customer_detail_stg");
         if (existing != null) {
@@ -171,7 +170,7 @@ public class CustomerDetailDAO {
         }
     }
 
-    // 개발 저장 또는 업데이트
+    // 개발 ?�???�는 ?�데?�트
     public boolean saveOrUpdateCustomerDetailDev(CustomerDetailDTO detail) {
         CustomerDetailDTO existing = getCustomerDetailFromTable(detail.getCustomerName(), "vertica_customer_detail_dev");
         if (existing != null) {
@@ -181,7 +180,7 @@ public class CustomerDetailDAO {
         }
     }
 
-    // 고객사 상세정보 추가
+    // 고객???�세?�보 추�?
     private boolean insertCustomerDetail(CustomerDetailDTO detail) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -209,7 +208,7 @@ public class CustomerDetailDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -218,7 +217,7 @@ public class CustomerDetailDAO {
         return success;
     }
 
-    // 공통: 특정 테이블에 상세정보 추가
+    // 공통: ?�정 ?�이블에 ?�세?�보 추�?
     private boolean insertCustomerDetailByTable(CustomerDetailDTO detail, String tableName) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -246,7 +245,7 @@ public class CustomerDetailDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -255,7 +254,7 @@ public class CustomerDetailDAO {
         return success;
     }
 
-    // 고객사 상세정보 업데이트
+    // 고객???�세?�보 ?�데?�트
     private boolean updateCustomerDetail(CustomerDetailDTO detail) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -278,9 +277,9 @@ public class CustomerDetailDAO {
 
             pstmt = conn.prepareStatement(sql);
 
-            // UPDATE 전용 파라미터 설정 (customer_name 제외)
-         // UPDATE 전용 파라미터 설정 (customer_name 제외)
-            pstmt.setString(1, detail.getSystemName());           // system_name (추가)
+            // UPDATE ?�용 ?�라미터 ?�정 (customer_name ?�외)
+         // UPDATE ?�용 ?�라미터 ?�정 (customer_name ?�외)
+            pstmt.setString(1, detail.getSystemName());           // system_name (추�?)
             pstmt.setString(2, detail.getCustomerManager());     // customer_manager
             pstmt.setString(3, detail.getSiCompany());           // si_company
             pstmt.setString(4, detail.getSiManager());           // si_manager
@@ -350,7 +349,7 @@ public class CustomerDetailDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -359,7 +358,7 @@ public class CustomerDetailDAO {
         return success;
     }
 
-    // 공통: 특정 테이블 업데이트
+    // 공통: ?�정 ?�이�??�데?�트
     private boolean updateCustomerDetailByTable(CustomerDetailDTO detail, String tableName) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -382,7 +381,7 @@ public class CustomerDetailDAO {
 
             pstmt = conn.prepareStatement(sql);
 
-            // 기존 setDetailParameters 로직을 재사용하기 어렵기에 아래와 같이 설정
+            // 기존 setDetailParameters 로직???�사?�하�??�렵기에 ?�래?� 같이 ?�정
             pstmt.setString(1, detail.getSystemName());
             pstmt.setString(2, detail.getCustomerManager());
             pstmt.setString(3, detail.getSiCompany());
@@ -448,7 +447,7 @@ public class CustomerDetailDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -457,12 +456,11 @@ public class CustomerDetailDAO {
         return success;
     }
 
- // PreparedStatement 파라미터 설정 메소드
-
- // PreparedStatement 파라미터 설정 메소드 (INSERT용)
+ // PreparedStatement ?�라미터 ?�정 메소??
+ // PreparedStatement ?�라미터 ?�정 메소??(INSERT??
     private void setDetailParameters(PreparedStatement pstmt, CustomerDetailDTO detail) throws SQLException {
         pstmt.setString(1, detail.getCustomerName());        // customer_name
-        pstmt.setString(2, detail.getSystemName());          // system_name (추가)
+        pstmt.setString(2, detail.getSystemName());          // system_name (추�?)
         pstmt.setString(3, detail.getCustomerManager());     // customer_manager
         pstmt.setString(4, detail.getSiCompany());           // si_company
         pstmt.setString(5, detail.getSiManager());           // si_manager
@@ -530,7 +528,7 @@ public class CustomerDetailDAO {
         pstmt.setString(49, detail.getNote());               // note
     }
 
-    // 고객사 상세정보 삭제
+    // 고객???�세?�보 ??��
     public boolean deleteCustomerDetail(String customerName) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -545,7 +543,7 @@ public class CustomerDetailDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);

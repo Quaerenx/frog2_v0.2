@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="pageTitle" value="정기점검 이력 - ${customerName}" scope="request" />
 <c:set var="pageBodyClass" value="page-1050 page-maintenance" scope="request" />
@@ -22,9 +23,11 @@
         padding: 2rem;
         border-radius: 12px;
         margin-bottom: 1.5rem;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e8ecef;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); /* 원복 */
+        border: 1px solid #e8ecef; /* 원복 */
     }
+    /* 유지보수 페이지: detail-item 아래 얇은 선 제거(하단 보더만 숨김) - 특이성 강화 및 폭 명시 */
+    body.page-maintenance .page-header { border-bottom: 0 !important; border-width: 1px 1px 0 1px !important; }
     
     .header-content {
         display: flex;
@@ -66,6 +69,11 @@
         align-items: center;
         gap: 0.5rem;
     }
+    
+    /* detail-item 아래의 불필요한 선을 제거합니다. */
+	.detail-item {
+    	border-bottom: none !important;
+	}
     
     .detail-item i {
         color: #6c757d;
@@ -217,8 +225,8 @@
     
 	.inspector-info {
 	    margin-left: auto;
-	    text-align: right; [cite: 133]
-	    color: #6b7280; [cite: 133]
+	    text-align: right;
+	    color: #6b7280;
 	    font-size: 0.875rem;
 	}
     
@@ -413,6 +421,10 @@
             justify-content: center;
         }
     }
+
+    /* 차트 카드 여백 보정 */
+.usage-chart-wrap { padding: 1rem 1.25rem 1.25rem; }
+.chart-note { color:#6b7280; font-size: 0.82rem; margin: 0.25rem 0 0.5rem; }
 </style>
 
 <div class="maintenance-history">
@@ -420,7 +432,7 @@
         <jsp:attribute name="title"><i class="fas fa-building"></i> ${customerName}</jsp:attribute>
         <jsp:attribute name="subtitle">
             <c:if test="${not empty customer}">
-                <span class="detail-item"><i class="fas fa-calendar"></i> 도입년도: ${customer.firstIntroductionYear}</span>
+                <!-- <span class="detail-item"><i class="fas fa-calendar"></i> 도입년도: ${customer.firstIntroductionYear}</span>  -->
                 <span class="detail-item"><i class="fas fa-database"></i> DB: ${customer.dbName}</span>
                 <span class="detail-item"><i class="fas fa-code-branch"></i> 버전: ${customer.verticaVersion}</span>
                 <span class="detail-item"><i class="fas fa-user"></i> 담당자: ${customer.managerName}</span>
@@ -431,7 +443,34 @@
             <a href="${pageContext.request.contextPath}/maintenance?view=cards" class="btn-min"><i class="fas fa-arrow-left"></i> 목록으로</a>
         </jsp:attribute>
     </t:pageHeader>
-    
+
+    <!-- 라이선스 사용률 추이 차트 -->
+    <div class="history-container" style="margin-bottom: 1rem;">
+        <div class="history-header">
+            <div class="history-title"><i class="fas fa-chart-line"></i> 라이선스 사용률 추이</div>
+            <div class="record-count">
+                <c:choose>
+                    <c:when test="${not empty usageSeries}">데이터: ${fn:length(usageSeries)}건</c:when>
+                    <c:otherwise>데이터 없음</c:otherwise>
+                </c:choose>
+            </div>
+        </div>
+        <div class="usage-chart-wrap">
+            <c:choose>
+                <c:when test="${not empty usageSeries}">
+                    <canvas id="licenseUsageChart" height="120"></canvas>
+                </c:when>
+                <c:otherwise>
+                    <div class="empty-history" style="padding: 2rem 1rem;">
+                        <i class="fas fa-chart-area"></i>
+                        <h3>표시할 사용률 추이 데이터가 없습니다</h3>
+                        <p>정기점검 이력을 추가하면 사용률 추이를 확인할 수 있습니다.</p>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+        </div>
+    </div>
+
     <!-- 성공/에러 메시지 표시 -->
     <c:if test="${not empty sessionScope.message}">
         <div class="alert alert-success">
@@ -491,10 +530,21 @@
                                         </c:choose>
                                     </span>
                                 </div>
+                                <div class="detail-group">
+                                    <span class="detail-label">라이선스</span>
+                                    <span class="detail-value">
+                                        <c:choose>
+                                            <c:when test="${not empty licenseSummaries[record.maintenanceId]}">
+                                                ${licenseSummaries[record.maintenanceId]}
+                                            </c:when>
+                                            <c:otherwise>-</c:otherwise>
+                                        </c:choose>
+                                    </span>
+                                </div>
                             </div>
                             <c:if test="${not empty record.note}">
                                 <div class="history-note"><div class="note-label"><i class="fas fa-sticky-note"> 점검 내용 및 비고</i>
-                                </div>${record.note}</div>
+                                </div><c:out value="${record.note}" /></div>
                             </c:if> 
                             <div class="history-actions"></div>
                         </div>
@@ -516,6 +566,159 @@
         </div>
     </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4"></script>
+<script>
+(function() {
+    // 데이터 준비: 서버에서 날짜별 pct/usedTb/sizeTb를 모두 포함한 단일 usageSeries를 전달
+    const usageSeries = [
+        <c:forEach var="pt" items="${usageSeries}" varStatus="st">
+            { 
+                date: "<c:out value='${pt.date}'/>",
+                // 기존 호환 키
+                value: <c:choose><c:when test="${pt.value != null}"><c:out value='${pt.value}'/></c:when><c:otherwise>null</c:otherwise></c:choose>,
+                // 명시 키들(숫자 그대로 출력)
+                pct: <c:choose><c:when test="${pt.pct != null}"><c:out value='${pt.pct}'/></c:when><c:otherwise>null</c:otherwise></c:choose>,
+                usedTb: <c:choose><c:when test="${pt.usedTb != null}"><c:out value='${pt.usedTb}'/></c:when><c:otherwise>null</c:otherwise></c:choose>,
+                sizeTb: <c:choose><c:when test="${pt.sizeTb != null}"><c:out value='${pt.sizeTb}'/></c:when><c:otherwise>null</c:otherwise></c:choose>
+            }<c:if test="${!st.last}">,</c:if>
+        </c:forEach>
+    ];
+
+    if (!usageSeries || usageSeries.length === 0) return;
+
+    // 퍼센트 문자열/숫자 파싱 (예: "75", "75%", "75.2 %") - 레거시 value 대비용
+    function parsePercent(x) {
+        if (x == null) return null;
+        const raw = String(x).trim();
+        if (!raw) return null;
+        const cleaned = raw.replace(/,/g, '').replace(/[^0-9.\-]/g, '');
+        if (!cleaned || cleaned === '-' || cleaned === '.') return null;
+        const v = Number(cleaned);
+        return Number.isFinite(v) ? v : null;
+    }
+
+    // 차트 X축 라벨과 데이터 구성 (오름차순 가정)
+    const labels = usageSeries.map(p => p.date);
+    const usageData = usageSeries.map(p => Number.isFinite(p.pct) ? p.pct : parsePercent(p.value));
+    const usedSizeData = usageSeries.map(p => Number.isFinite(p.usedTb) ? p.usedTb : null);
+    const capacitySizeData = usageSeries.map(p => Number.isFinite(p.sizeTb) ? p.sizeTb : null);
+
+    const ctx = document.getElementById('licenseUsageChart');
+    if (!ctx) return;
+
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: '사용률(%)',
+                    data: usageData,
+                    yAxisID: 'y',
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59,130,246,0.15)',
+                    tension: 0.25,
+                    spanGaps: true,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    fill: false
+                },
+                {
+                    label: '라이선스 사용량(TB)',
+                    data: usedSizeData,
+                    yAxisID: 'y1',
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16,185,129,0.15)',
+                    tension: 0,
+                    stepped: true,
+                    spanGaps: true,
+                    pointRadius: 2,
+                    pointHoverRadius: 4,
+                    fill: false
+                },
+                {
+                    label: '라이선스 크기(TB)',
+                    data: capacitySizeData,
+                    yAxisID: 'y1',
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239,68,68,0.15)',
+                    tension: 0,
+                    stepped: true,
+                    pointRadius: 2,
+                    pointHoverRadius: 4,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    // 숫자 값이 있는 항목만 노출
+                    filter: function(context) {
+                        const y = context && context.parsed ? context.parsed.y : null;
+                        return y != null && Number.isFinite(y);
+                    },
+                    callbacks: {
+                        // 점검일(라벨) 표시
+                        title: function(items) {
+                            if (!items || !items.length) return '';
+                            const idx = items[0].dataIndex;
+                            return '점검일: ' + (Array.isArray(labels) ? labels[idx] : '');
+                        },
+                        // 값 + 단위 정확 표기
+                        label: function(ctx) {
+                            let y = ctx && ctx.parsed ? ctx.parsed.y : null;
+                            if (y == null || !Number.isFinite(y)) {
+                                // 보강: raw에서도 숫자 시도
+                                const raw = ctx.raw;
+                                const cand = raw && typeof raw === 'object' ? (raw.y ?? raw.value) : raw;
+                                if (cand != null) {
+                                    const n = (typeof cand === 'number') ? cand : Number(String(cand).replace(/,/g,'').replace(/[^0-9.\-]/g,''));
+                                    if (Number.isFinite(n)) y = n;
+                                }
+                            }
+                            if (y == null || !Number.isFinite(y)) return null;
+                            const name = ctx.dataset && ctx.dataset.label ? ctx.dataset.label : '';
+                            if (ctx.dataset && ctx.dataset.yAxisID === 'y') {
+                                return (name ? name + ': ' : '') + y.toFixed(0) + '%';
+                            }
+                            return (name ? name + ': ' : '') + y.toFixed(2) + ' TB';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    suggestedMin: 0,
+                    suggestedMax: 100,
+                    ticks: {
+                        callback: function(v) {
+                            const n = Number(v);
+                            return Number.isFinite(n) ? n.toFixed(0) : String(v);
+                        }
+                    },
+                    title: { display: true, text: '사용률(%)' }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    min: 0,
+                    grid: { drawOnChartArea: false },
+                    title: { display: true, text: '용량(TB)' }
+                },
+                x: { title: { display: true, text: '점검일' } }
+            }
+        }
+    });
+})();
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

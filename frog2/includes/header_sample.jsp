@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${pageTitle} - 샘플 헤더</title>
+    <!-- Favicon -->
+    <link rel="icon" href="${pageContext.request.contextPath}/favicon.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/favicon.png">
+    <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.png" type="image/png">
     <!-- 기본 스타일 -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/main_style.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/components.css">
@@ -16,6 +20,29 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/pages/header_sample.css">
 </head>
 <body>
+    <script>
+      (function(){
+        try {
+          var head = document.head || document.getElementsByTagName('head')[0];
+          if (!head) return;
+          var hasIcon = head.querySelector('link[rel~="icon"], link[rel="shortcut icon"]');
+          if (!hasIcon) {
+            var href = (window.__ctxPath || '${pageContext.request.contextPath}') + '/favicon.png?v=1';
+            var link = document.createElement('link');
+            link.rel = 'icon';
+            link.type = 'image/png';
+            link.sizes = '32x32';
+            link.href = href;
+            head.appendChild(link);
+            var s = document.createElement('link');
+            s.rel = 'shortcut icon';
+            s.type = 'image/png';
+            s.href = href;
+            head.appendChild(s);
+          }
+        } catch (e) {}
+      })();
+    </script>
   <!-- 별개 박스 형태의 샘플 헤더 -->
   <div class="sample-header-box">
     <div class="sample-header-inner">
@@ -39,4 +66,3 @@
       </ul>
     </nav>
   </div>
-

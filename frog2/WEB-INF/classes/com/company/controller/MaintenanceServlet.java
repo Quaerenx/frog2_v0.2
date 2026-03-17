@@ -47,7 +47,7 @@ public class MaintenanceServlet extends HttpServlet {
         CustomerDAO customerDAO = new CustomerDAO();
 
         if ("cards".equals(viewType)) {
-            // 담당자별 고객사 카드 목록 표시
+            // 담당자별 고객사 카드 목록 표시 (라이선스 요약 제거)
             Map<String, List<CustomerDTO>> inspectorCustomers = getInspectorCustomersMap();
             request.setAttribute("inspectorCustomers", inspectorCustomers);
             request.setAttribute("viewType", "cards");
@@ -62,11 +62,21 @@ public class MaintenanceServlet extends HttpServlet {
                 // 라이선스 사용률 시리즈
                 List<java.util.Map<String, Object>> usageSeries = maintenanceDAO.getLicenseUsageSeries(customerName);
 
+                // 각 이력에 대한 라이선스 요약(TB) 문자열 생성
+                Map<Long, String> licenseSummaries = new LinkedHashMap<>();
+                for (MaintenanceRecordDTO rec : records) {
+                    String summary = buildLicenseSummaryTB(rec);
+                    if (summary != null) {
+                        licenseSummaries.put(rec.getMaintenanceId(), summary);
+                    }
+                }
+
                 // 고객사 기본 정보 조회
                 CustomerDTO customer = customerDAO.getCustomerByName(customerName);
 
                 request.setAttribute("records", records);
                 request.setAttribute("usageSeries", usageSeries);
+                request.setAttribute("licenseSummaries", licenseSummaries);
                 request.setAttribute("customer", customer);
                 request.setAttribute("customerName", customerName);
                 request.setAttribute("viewType", "history");
@@ -157,6 +167,10 @@ public class MaintenanceServlet extends HttpServlet {
             record.setInspectionDate(parseDate(request.getParameter("inspection_date")));
             record.setVerticaVersion(request.getParameter("vertica_version"));
             record.setNote(request.getParameter("note"));
+            // 문자열로 그대로 수집
+            record.setLicenseSizeGb(trimToNull(request.getParameter("license_size_gb")));
+            record.setLicenseUsageSize(trimToNull(request.getParameter("license_usage_size")));
+            record.setLicenseUsagePct(trimToNull(request.getParameter("license_usage_pct")));
 
             boolean success = maintenanceDAO.addMaintenanceRecord(record);
             if (success) {
@@ -181,6 +195,10 @@ public class MaintenanceServlet extends HttpServlet {
                     record.setInspectionDate(parseDate(request.getParameter("inspection_date")));
                     record.setVerticaVersion(request.getParameter("vertica_version"));
                     record.setNote(request.getParameter("note"));
+                    // 문자열로 그대로 수집
+                    record.setLicenseSizeGb(trimToNull(request.getParameter("license_size_gb")));
+                    record.setLicenseUsageSize(trimToNull(request.getParameter("license_usage_size")));
+                    record.setLicenseUsagePct(trimToNull(request.getParameter("license_usage_pct")));
 
                     boolean success = maintenanceDAO.updateMaintenanceRecord(record);
                     if (success) {
@@ -242,5 +260,82 @@ public class MaintenanceServlet extends HttpServlet {
         } catch (ParseException e) {
             return null;
         }
+    }
+
+    private String trimToNull(String v) {
+        if (v == null) return null;
+        String t = v.trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    // 라이선스 요약 문자열(TB) 생성: "{size}TB 중 {usage}TB 총 {pct}% 사용 중"
+    private String buildLicenseSummaryTB(MaintenanceRecordDTO rec) {
+        if (rec == null) return null;
+        Double sizeGb = parseToGb(rec.getLicenseSizeGb());
+        Double usageGb = parseToGb(rec.getLicenseUsageSize());
+        Double pct = parseNumber(rec.getLicenseUsagePct());
+
+        Double sizeTb = (sizeGb != null ? sizeGb / 1024.0 : null);
+        Double usageTb = (usageGb != null ? usageGb / 1024.0 : null);
+
+        // 퍼센트가 없고, 사이즈/사용량이 있으면 계산하여 채움
+        if (pct == null && sizeGb != null && usageGb != null && sizeGb > 0) {
+            pct = (usageGb / sizeGb) * 100.0;
+        }
+
+        // 아무 값도 없으면 표시하지 않음
+        if (sizeTb == null && usageTb == null && pct == null) {
+            return null;
+        }
+
+        String sizeStr = (sizeTb != null ? format2(sizeTb) + "TB" : null);
+        String usageStr = (usageTb != null ? format2(usageTb) + "TB" : null);
+        String pctStr = (pct != null ? String.valueOf(Math.round(pct)) + "%" : null);
+
+        StringBuilder sb = new StringBuilder();
+        if (sizeStr != null) sb.append(sizeStr); else sb.append("-");
+        sb.append(" 중 ");
+        if (usageStr != null) sb.append(usageStr); else sb.append("-");
+        sb.append(" 총 ");
+        if (pctStr != null) sb.append(pctStr); else sb.append("-");
+        sb.append(" 사용 중");
+        return sb.toString();
+    }
+
+    // 문자열 값에서 TB/GB 단위를 인지하여 GB로 환산해 반환
+    private Double parseToGb(String s) {
+        if (s == null) return null;
+        String raw = s.trim();
+        if (raw.isEmpty()) return null;
+        String lower = raw.toLowerCase();
+        boolean isTb = lower.contains("tb");
+        boolean isGb = lower.contains("gb");
+        Double n = parseNumber(raw);
+        if (n == null) return null;
+        if (isTb || (!isGb && !isTb)) {
+            // TB 명시 또는 단위 미표시(기본 TB)인 경우 GB로 환산
+            return n * 1024.0;
+        }
+        // GB 명시 시 그대로 GB로 처리
+        return n;
+    }
+
+    private Double parseNumber(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        if (t.isEmpty()) return null;
+        // 숫자, 소수점, 마이너스만 남김. 콤마 제거.
+        t = t.replace(",", "");
+        t = t.replaceAll("[^0-9.\\-]", "");
+        if (t.isEmpty() || t.equals("-") || t.equals(".")) return null;
+        try {
+            return Double.parseDouble(t);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String format2(double v) {
+        return String.format(java.util.Locale.US, "%.2f", v);
     }
 }

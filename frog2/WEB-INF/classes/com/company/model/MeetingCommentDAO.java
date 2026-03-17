@@ -11,7 +11,7 @@ import com.company.util.DBConnection;
 
 public class MeetingCommentDAO {
 
-    // 특정 회의록의 댓글 목록 조회
+    // ?�정 ?�의록의 ?��? 목록 조회
     public List<MeetingCommentDTO> getCommentsByMeetingId(Long meetingId) {
         List<MeetingCommentDTO> comments = new ArrayList<>();
         Connection conn = null;
@@ -37,7 +37,7 @@ public class MeetingCommentDAO {
 
                 comments.add(comment);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -46,7 +46,7 @@ public class MeetingCommentDAO {
         return comments;
     }
 
-    // 댓글 추가
+    // ?��? 추�?
     public boolean addComment(MeetingCommentDTO comment) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -66,7 +66,7 @@ public class MeetingCommentDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -75,7 +75,7 @@ public class MeetingCommentDAO {
         return success;
     }
 
-    // 댓글 수정
+    // ?��? ?�정
     public boolean updateComment(MeetingCommentDTO comment) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -93,7 +93,7 @@ public class MeetingCommentDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -102,7 +102,7 @@ public class MeetingCommentDAO {
         return success;
     }
 
-    // 댓글 삭제
+    // ?��? ??��
     public boolean deleteComment(Long commentId) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -117,7 +117,7 @@ public class MeetingCommentDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -126,7 +126,7 @@ public class MeetingCommentDAO {
         return success;
     }
 
-    // 댓글 작성자 권한 확인
+    // ?��? ?�성??권한 ?�인
     public boolean isCommentAuthor(Long commentId, String userId) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -144,7 +144,7 @@ public class MeetingCommentDAO {
                 String authorId = rs.getString("author_id");
                 isAuthor = userId.equals(authorId);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -153,7 +153,7 @@ public class MeetingCommentDAO {
         return isAuthor;
     }
 
-    // 특정 댓글 조회
+    // ?�정 ?��? 조회
     public MeetingCommentDTO getComment(Long commentId) {
         MeetingCommentDTO comment = null;
         Connection conn = null;
@@ -177,7 +177,7 @@ public class MeetingCommentDAO {
                 comment.setCreatedAt(rs.getTimestamp("created_at"));
                 comment.setUpdatedAt(rs.getTimestamp("updated_at"));
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);

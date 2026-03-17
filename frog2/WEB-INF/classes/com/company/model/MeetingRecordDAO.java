@@ -12,7 +12,7 @@ import com.company.util.DBConnection;
 public class MeetingRecordDAO {
     private static final int PAGE_SIZE = 20;
 
-    // 페이징 처리된 회의록 목록 조회 (댓글 개수 포함)
+    // ?�이�?처리???�의�?목록 조회 (?��? 개수 ?�함)
     public List<MeetingRecordDTO> getMeetingRecords(int page) {
         List<MeetingRecordDTO> records = new ArrayList<>();
         Connection conn = null;
@@ -50,7 +50,7 @@ public class MeetingRecordDAO {
 
                 records.add(record);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -59,7 +59,7 @@ public class MeetingRecordDAO {
         return records;
     }
 
-    // 전체 회의록 개수 조회 (페이징용)
+    // ?�체 ?�의�?개수 조회 (?�이징용)
     public int getTotalCount() {
         int count = 0;
         Connection conn = null;
@@ -75,7 +75,7 @@ public class MeetingRecordDAO {
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -84,7 +84,7 @@ public class MeetingRecordDAO {
         return count;
     }
 
-    // 특정 회의록 조회 (조회수 증가)
+    // ?�정 ?�의�?조회 (조회??증�?)
     public MeetingRecordDTO getMeetingRecord(Long meetingId) {
         MeetingRecordDTO record = null;
         Connection conn = null;
@@ -94,14 +94,14 @@ public class MeetingRecordDAO {
         try {
             conn = DBConnection.getConnection();
 
-            // 조회수 증가
+            // 조회??증�?
             String updateSql = "UPDATE meeting_records SET view_count = view_count + 1 WHERE meeting_id = ?";
             pstmt = conn.prepareStatement(updateSql);
             pstmt.setLong(1, meetingId);
             pstmt.executeUpdate();
             DBConnection.close(pstmt);
 
-            // 회의록 조회
+            // ?�의�?조회
             String selectSql = "SELECT * FROM meeting_records WHERE meeting_id = ?";
             pstmt = conn.prepareStatement(selectSql);
             pstmt.setLong(1, meetingId);
@@ -120,7 +120,7 @@ public class MeetingRecordDAO {
                 record.setCreatedAt(rs.getTimestamp("created_at"));
                 record.setUpdatedAt(rs.getTimestamp("updated_at"));
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -129,7 +129,7 @@ public class MeetingRecordDAO {
         return record;
     }
 
-    // 회의록 추가
+    // ?�의�?추�?
     public boolean addMeetingRecord(MeetingRecordDTO record) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -151,7 +151,7 @@ public class MeetingRecordDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -160,7 +160,7 @@ public class MeetingRecordDAO {
         return success;
     }
 
-    // 회의록 수정
+    // ?�의�??�정
     public boolean updateMeetingRecord(MeetingRecordDTO record) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -181,7 +181,7 @@ public class MeetingRecordDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -190,7 +190,7 @@ public class MeetingRecordDAO {
         return success;
     }
 
-    // 회의록 삭제
+    // ?�의�???��
     public boolean deleteMeetingRecord(Long meetingId) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -205,7 +205,7 @@ public class MeetingRecordDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -214,7 +214,7 @@ public class MeetingRecordDAO {
         return success;
     }
 
-    // 작성자 권한 확인
+    // ?�성??권한 ?�인
     public boolean isAuthor(Long meetingId, String userId) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -232,7 +232,7 @@ public class MeetingRecordDAO {
                 String authorId = rs.getString("author_id");
                 isAuthor = userId.equals(authorId);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -241,7 +241,7 @@ public class MeetingRecordDAO {
         return isAuthor;
     }
 
-    // 페이지 크기 반환
+    // ?�이지 ?�기 반환
     public static int getPageSize() {
         return PAGE_SIZE;
     }

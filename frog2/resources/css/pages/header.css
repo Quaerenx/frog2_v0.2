@@ -43,6 +43,10 @@
 .page-dashboard .main-header .container { max-width: 968px; }
 .page-dashboard .main-footer .container { max-width: 968px; }
 
+/* 호스트 페이지도 968px로 통일 */
+.page-hosts .main-header .header-box,
+.page-hosts .main-header .container { max-width: 968px; }
+
 /* 드롭다운 메뉴 스타일 - 수정된 버전 */
 .main-nav ul li.dropdown {
     position: relative;

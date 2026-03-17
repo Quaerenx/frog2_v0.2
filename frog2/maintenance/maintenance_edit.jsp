@@ -78,6 +78,24 @@
                 </div>
             </div>
             
+            <!-- 라이선스 정보 -->
+            <div class="section-title">라이선스 정보 (선택)</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="license_size_gb">라이선스 크기 (TB)</label>
+                    <!-- varchar(50)로 변경됨: 자유 입력, 최대 50자 -->
+                    <input type="text" id="license_size_gb" name="license_size_gb" maxlength="50" value="${record.licenseSizeGb}" placeholder="예: 4 또는 4TB">
+                </div>
+                <div class="form-group">
+                    <label for="license_usage_size">라이선스 사용량 (TB)</label>
+                    <input type="text" id="license_usage_size" name="license_usage_size" maxlength="50" value="${record.licenseUsageSize}" placeholder="예: 3.5 또는 3.5TB">
+                </div>
+                <div class="form-group">
+                    <label for="license_usage_pct">라이선스 사용률 (%)</label>
+                    <input type="text" id="license_usage_pct" name="license_usage_pct" maxlength="50" value="${record.licenseUsagePct}" placeholder="예: 75 또는 75%">
+                </div>
+            </div>
+            
             <!-- 점검 내용 -->
             <div class="section-title">점검 내용</div>
             
@@ -220,28 +238,61 @@ function confirmDelete() {
 document.querySelector('form').addEventListener('submit', function(e) {
     if (e.target.id === 'deleteForm') return; // 삭제 폼은 검사하지 않음
     
-    const customerName = document.getElementById('customer_name').value.trim();
-    const inspectorName = document.getElementById('inspector_name').value.trim();
-    const inspectionDate = document.getElementById('inspection_date').value;
-    
+    const customerNameEl = document.getElementById('customer_name');
+    const inspectorNameEl = document.getElementById('inspector_name');
+    const inspectionDateEl = document.getElementById('inspection_date');
+    const sizeEl = document.getElementById('license_size_gb');
+    const usageSizeEl = document.getElementById('license_usage_size');
+    const usageEl = document.getElementById('license_usage_pct');
+
+    const customerName = (customerNameEl.value || '').trim();
+    const inspectorName = (inspectorNameEl.value || '').trim();
+    const inspectionDate = inspectionDateEl.value;
+
     if (!customerName) {
         e.preventDefault();
         alert('고객사명을 선택해주세요.');
-        document.getElementById('customer_name').focus();
+        customerNameEl.focus();
         return false;
     }
     
     if (!inspectorName) {
         e.preventDefault();
         alert('점검자를 선택해주세요.');
-        document.getElementById('inspector_name').focus();
+        inspectorNameEl.focus();
         return false;
     }
     
     if (!inspectionDate) {
         e.preventDefault();
         alert('점검일자를 입력해주세요.');
-        document.getElementById('inspection_date').focus();
+        inspectionDateEl.focus();
+        return false;
+    }
+
+    // 선택 항목 길이 검증 (varchar(50))
+    const sizeVal = (sizeEl.value || '').trim();
+    const usageSizeVal = (usageSizeEl.value || '').trim();
+    const usageVal = (usageEl.value || '').trim();
+
+    if (sizeVal && sizeVal.length > 50) {
+        e.preventDefault();
+        alert('라이선스 크기는 최대 50자까지 입력할 수 있습니다.');
+        sizeEl.focus();
+        return false;
+    }
+
+    if (usageSizeVal && usageSizeVal.length > 50) {
+        e.preventDefault();
+        alert('라이선스 사용량은 최대 50자까지 입력할 수 있습니다.');
+        usageSizeEl.focus();
+        return false;
+    }
+
+    if (usageVal && usageVal.length > 50) {
+        e.preventDefault();
+        alert('라이선스 사용률은 최대 50자까지 입력할 수 있습니다.');
+        usageEl.focus();
         return false;
     }
 });

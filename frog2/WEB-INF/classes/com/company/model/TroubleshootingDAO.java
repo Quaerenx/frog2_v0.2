@@ -13,7 +13,7 @@ import com.company.util.DBConnection;
 
 public class TroubleshootingDAO {
 
-    // 모든 트러블 슈팅 목록 조회
+    // 모든 ?�러�??�팅 목록 조회
     public List<TroubleshootingDTO> getAllTroubleshooting() {
         List<TroubleshootingDTO> troubleshootingList = new ArrayList<>();
         Connection conn = null;
@@ -23,7 +23,8 @@ public class TroubleshootingDAO {
         try {
             conn = DBConnection.getConnection();
             String sql = "SELECT id, title, customer_name, occurrence_date, creator, create_date " +
-                        "FROM troubleshooting ORDER BY create_date DESC";
+                        // ?�렬: 발생?�자 ?�림차순, NULL?� ?�로, ?�일 ???�성???�림차순
+                        "FROM troubleshooting ORDER BY occurrence_date DESC";
             pstmt = conn.prepareStatement(sql);
             rs = pstmt.executeQuery();
 
@@ -47,7 +48,7 @@ public class TroubleshootingDAO {
 
                 troubleshootingList.add(ts);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -56,7 +57,7 @@ public class TroubleshootingDAO {
         return troubleshootingList;
     }
 
-    // 검색: 제목/고객사/작성자 및 본문 필드까지 ILIKE 검색
+    // 검색: 제목/고객명/작성자 및 본문 필드까지 ILIKE 검색
     public List<TroubleshootingDTO> searchTroubleshooting(String query) {
         List<TroubleshootingDTO> troubleshootingList = new ArrayList<>();
         if (query == null || query.trim().isEmpty()) {
@@ -81,7 +82,8 @@ public class TroubleshootingDAO {
                 "   OR CAST(SUBSTR(action_taken,1,65000) AS VARCHAR(65000)) ILIKE CAST(? AS VARCHAR(65000)) " +
                 "   OR CAST(SUBSTR(script_content,1,65000) AS VARCHAR(65000)) ILIKE CAST(? AS VARCHAR(65000)) " +
                 "   OR CAST(SUBSTR(note,1,65000) AS VARCHAR(65000)) ILIKE CAST(? AS VARCHAR(65000)) " +
-                "ORDER BY create_date DESC";
+                // ?�렬: 발생?�자 ?�림차순, NULL?� ?�로, ?�일 ???�성???�림차순
+                "ORDER BY occurrence_date DESC NULLS LAST, create_date DESC";
 
             pstmt = conn.prepareStatement(sql);
             String like = "%" + query.trim() + "%";
@@ -110,7 +112,7 @@ public class TroubleshootingDAO {
 
                 troubleshootingList.add(ts);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -119,7 +121,7 @@ public class TroubleshootingDAO {
         return troubleshootingList;
     }
 
-    // 특정 트러블 슈팅 상세 조회
+    // ?�정 ?�러�??�팅 ?�세 조회
     public TroubleshootingDTO getTroubleshootingById(int id) {
         TroubleshootingDTO ts = null;
         Connection conn = null;
@@ -168,7 +170,7 @@ public class TroubleshootingDAO {
                     ts.setUpdatedDate(new java.util.Date(updatedTs.getTime()));
                 }
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -177,7 +179,7 @@ public class TroubleshootingDAO {
         return ts;
     }
 
-    // 새 트러블 슈팅 추가
+    // ???�러�??�팅 추�?
     public boolean addTroubleshooting(TroubleshootingDTO ts) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -218,7 +220,7 @@ public class TroubleshootingDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -227,7 +229,7 @@ public class TroubleshootingDAO {
         return success;
     }
 
-    // 트러블 슈팅 수정
+    // ?�러�??�팅 ?�정
     public boolean updateTroubleshooting(TroubleshootingDTO ts) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -269,7 +271,7 @@ public class TroubleshootingDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -278,7 +280,7 @@ public class TroubleshootingDAO {
         return success;
     }
 
-    // 트러블 슈팅 삭제
+    // ?�러�??�팅 ??��
     public boolean deleteTroubleshooting(int id) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -293,7 +295,7 @@ public class TroubleshootingDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -302,7 +304,52 @@ public class TroubleshootingDAO {
         return success;
     }
 
-    // 빈 문자열을 NULL로 처리하는 도우미 메서드
+    // 특정 작성자의 트러블슈팅 목록 조회
+    public List<TroubleshootingDTO> getTroubleshootingByCreator(String creator) {
+        List<TroubleshootingDTO> troubleshootingList = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            String sql = "SELECT id, title, customer_name, occurrence_date, creator, create_date " +
+                        "FROM troubleshooting WHERE creator = ? " +
+                        "ORDER BY occurrence_date DESC";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, creator);
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                TroubleshootingDTO ts = new TroubleshootingDTO();
+                ts.setId(rs.getInt("id"));
+                ts.setTitle(rs.getString("title"));
+                ts.setCustomerName(rs.getString("customer_name"));
+
+                Timestamp occurrenceTs = rs.getTimestamp("occurrence_date");
+                if (occurrenceTs != null) {
+                    ts.setOccurrenceDate(new java.util.Date(occurrenceTs.getTime()));
+                }
+
+                ts.setCreator(rs.getString("creator"));
+
+                Timestamp createTs = rs.getTimestamp("create_date");
+                if (createTs != null) {
+                    ts.setCreateDate(new java.util.Date(createTs.getTime()));
+                }
+
+                troubleshootingList.add(ts);
+            }
+        } catch (SQLException  e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.close(rs, pstmt, conn);
+        }
+
+        return troubleshootingList;
+    }
+
+    // 빈 문자열을 NULL로 처리하는 헬퍼 메서드
     private void setStringOrNull(PreparedStatement pstmt, int parameterIndex, String value) throws SQLException {
         if (value == null || value.trim().isEmpty()) {
             pstmt.setNull(parameterIndex, Types.VARCHAR);

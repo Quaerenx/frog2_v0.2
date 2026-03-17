@@ -92,7 +92,7 @@ public class CustomerDAO {
 
                 customerList.add(customer);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -127,7 +127,7 @@ public class CustomerDAO {
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -165,7 +165,7 @@ public class CustomerDAO {
                 customer.setSaid(rs.getString("said"));
                 customer.setCustomerType(rs.getString("customer_type"));
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(rs, pstmt, conn);
@@ -202,7 +202,7 @@ public class CustomerDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -238,7 +238,7 @@ public class CustomerDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -247,7 +247,7 @@ public class CustomerDAO {
         return success;
     }
 
-    // 고객사 삭제 (상세 테이블에서 삭제)
+    // 고객사 삭제 (상세 테이블에서 비활성)
     public boolean deleteCustomer(String customerName) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -262,7 +262,7 @@ public class CustomerDAO {
             int rowsAffected = pstmt.executeUpdate();
             success = (rowsAffected > 0);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException  e) {
             e.printStackTrace();
         } finally {
             DBConnection.close(pstmt, conn);
@@ -271,7 +271,7 @@ public class CustomerDAO {
         return success;
     }
 
-    // 빈 문자열을 NULL로 처리하는 도우미 메서드
+    // 빈 문자열을 NULL로 처리하는 헬퍼 메서드
     private void setStringOrNull(PreparedStatement pstmt, int parameterIndex, String value) throws SQLException {
         if (value == null || value.trim().isEmpty()) {
             pstmt.setNull(parameterIndex, Types.VARCHAR);

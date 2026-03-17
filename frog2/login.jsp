@@ -1,10 +1,15 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>로그인 | 사내 시스템</title>
+    <!-- Favicon -->
+    <link rel="icon" href="${pageContext.request.contextPath}/favicon.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/favicon.png">
+    <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/pages/dashboard_box.css">
@@ -95,11 +100,11 @@
     <h1 class="text-center">로그인</h1>
             <!-- <p class="subtitle">사내 시스템에 액세스하려면 로그인하세요.</p> -->
             
-            <% if(request.getAttribute("errorMessage") != null) { %>
+            <c:if test="${not empty errorMessage}">
                 <div class="error-message">
-                    <%= request.getAttribute("errorMessage") %>
+                    <c:out value="${errorMessage}"/>
                 </div>
-            <% } %>
+            </c:if>
             
             <form action="login" method="post" autocomplete="off">
                 <!-- 브라우저 자동완성 방지용 더미 필드 -->

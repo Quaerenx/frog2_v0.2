@@ -6,8 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${pageTitle} - 게시판 시스템</title>
     <!-- Favicon -->
-    <link rel="icon" href="${pageContext.request.contextPath}/favicon.ico" type="image/x-icon">
-    <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="${pageContext.request.contextPath}/favicon.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/favicon.png">
+    <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.png" type="image/png">
     <!-- 기본 스타일시트 임포트 -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/main_style.css">
     <!-- 컴포넌트 스타일시트 -->
@@ -22,14 +23,38 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 </head>
 <body class="${pageBodyClass}">
+    <!-- Ensure favicon is present even if this include is after <head> -->
+    <script>
+      (function(){
+        try {
+          var head = document.head || document.getElementsByTagName('head')[0];
+          if (!head) return;
+          var hasIcon = head.querySelector('link[rel~="icon"], link[rel="shortcut icon"]');
+          if (!hasIcon) {
+            var href = (window.__ctxPath || '${pageContext.request.contextPath}') + '/favicon.png?v=1';
+            var link = document.createElement('link');
+            link.rel = 'icon';
+            link.type = 'image/png';
+            link.sizes = '32x32';
+            link.href = href;
+            head.appendChild(link);
+            var s = document.createElement('link');
+            s.rel = 'shortcut icon';
+            s.type = 'image/png';
+            s.href = href;
+            head.appendChild(s);
+          }
+        } catch (e) {}
+      })();
+    </script>
     <header class="main-header">
         <div class="header-box">
         <div class="container">
             <div class="logo">
                 <a href="${pageContext.request.contextPath}/dashboard" class="logo-icon d-flex align-items-center">
-			        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28">
-			            <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2zm0 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z" fill="#333333" opacity="0.9"/>
-			        </svg>
+		        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28">
+		            <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2zm0 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z" fill="#333333" opacity="0.9"/>
+		        </svg>
                 </a>	
                 <span class="logo-text">ARCHIVE</span>
             </div>
@@ -65,16 +90,16 @@
                     </li>
                                         <!-- 자료관리 드롭다운 -->
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle ${pageTitle eq '업무자료' || pageTitle eq '회의자료' || pageTitle eq '기타자료' ? 'active' : ''}">
+                        <a href="#" class="dropdown-toggle ${pageTitle eq '업무자료' || pageTitle eq '회의자료' || pageTitle eq '기타자료' || pageTitle eq '호스트 관리' ? 'active' : ''}">
                             <i class="fas fa-folder mr-1"></i>자료관리
                             <!-- <i class="fas fa-caret-down ml-1"></i> -->
                         </a>	
                         <ul class="dropdown-menu">
                             <li>
-							    <a href="${pageContext.request.contextPath}/meeting?view=list">
-							        <i class="fas fa-clipboard-list mr-2"></i>회의록	
-							    </a>
-							</li>
+				    <a href="${pageContext.request.contextPath}/meeting?view=list">
+				        <i class="fas fa-clipboard-list mr-2"></i>회의록	
+				    </a>
+				</li>
                             <li>
                                 <a href="${pageContext.request.contextPath}/filerepo/filerepo_downlist.jsp">
                                     <i class="fas fa-file-alt mr-2"></i>자료실
@@ -88,7 +113,12 @@
                         </ul>
                     </li>
                     
-                    
+                    <!-- 마이페이지 -->
+                    <li>
+                        <a href="${pageContext.request.contextPath}/mypage" class="${pageTitle eq '마이페이지' ? 'active' : ''}">
+                            <i class="fas fa-user mr-1"></i>마이페이지
+                        </a>
+                    </li>
                     
                     <!-- 로그아웃 -->
                     <li>

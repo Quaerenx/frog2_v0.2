@@ -2,7 +2,7 @@ package com.company.controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,21 +40,22 @@ public class DashboardServlet extends HttpServlet {
 			return;
 		}
 
-		// 대시보드 메뉴 구성 정보 설정 (카테고리별)
-		Map<String, List<MenuItem>> dashboardMenus = new HashMap<>();
+		// 대시보드 메뉴 구성 정보 설정 (카테고리별) - 순서 보장을 위해 LinkedHashMap 사용
+		Map<String, List<MenuItem>> dashboardMenus = new LinkedHashMap<>();
+		
+		// 고객관리 메뉴
+		List<MenuItem> customerMenus = new ArrayList<>();
+		customerMenus.add(new MenuItem(" 고객사 정보", "customers?view=list", "fas fa-address-card"));
+		customerMenus.add(new MenuItem(" 정기점검 이력", "maintenance", "fas fa-clipboard-check"));
+		dashboardMenus.put("고객관리", customerMenus);
 
 		// 자료관리 메뉴
 		List<MenuItem> archiveMenus = new ArrayList<>();
-		archiveMenus.add(new MenuItem("회의록", "meeting?view=list", "fas fa-users"));
-        archiveMenus.add(new MenuItem("자료실", "filerepo/filerepo_downlist.jsp", "fas fa-file-alt"));
-		archiveMenus.add(new MenuItem("트러블슈팅", "troubleshooting?view=list", "fas fa-tools"));
+		archiveMenus.add(new MenuItem(" 회의록", "meeting?view=list", "fas fa-users"));
+        archiveMenus.add(new MenuItem(" 자료실", "filerepo/filerepo_downlist.jsp", "fas fa-file-alt"));
+		archiveMenus.add(new MenuItem(" 트러블슈팅", "troubleshooting?view=list", "fas fa-tools"));
 		dashboardMenus.put("자료관리", archiveMenus);
 
-		// 고객관리 메뉴
-		List<MenuItem> customerMenus = new ArrayList<>();
-		customerMenus.add(new MenuItem("고객사 정보", "customers?view=list", "fas fa-address-card"));
-		customerMenus.add(new MenuItem("정기점검 이력", "maintenance", "fas fa-clipboard-check"));
-		dashboardMenus.put("고객관리", customerMenus);
 
 		// 대시보드 메뉴 구성 정보를 request에 설정
 		request.setAttribute("dashboardMenus", dashboardMenus);

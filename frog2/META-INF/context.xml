@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <!-- 부모 클래스로더보다 웹 애플리케이션 클래스로더를 우선 사용 -->
+    <Loader delegate="false"/>
+    
+    <!-- 세션 쿠키 설정 -->
+    <CookieProcessor className="org.apache.tomcat.util.http.Rfc6265CookieProcessor"
+                     sameSiteCookies="strict"/>
+</Context>
