@@ -3,25 +3,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
-    
-    <display-name>회사 내부 시스템</display-name>
-    
-    <!-- 세션 설정 -->
+
+    <display-name>frog2</display-name>
+
     <session-config>
-        <session-timeout>360</session-timeout> <!-- 360분 (6시간) -->
+        <session-timeout>360</session-timeout>
         <cookie-config>
             <http-only>true</http-only>
-            <!-- HTTPS 운영 시 아래 secure 활성화 권장 -->
-            <!-- <secure>true</secure> -->
         </cookie-config>
     </session-config>
-    
-    <!-- 시작 페이지 설정 -->
+
     <welcome-file-list>
         <welcome-file>dashboard</welcome-file>
     </welcome-file-list>
-    
-    <!-- 에러 페이지 설정 -->
+
     <error-page>
         <error-code>404</error-code>
         <location>/error/404.jsp</location>
@@ -31,7 +26,6 @@
         <location>/error/500.jsp</location>
     </error-page>
 
-    <!-- UTF-8 인코딩 필터 (요청/응답 인코딩 일관화) -->
     <filter>
         <filter-name>CharacterEncodingFilter</filter-name>
         <filter-class>com.company.filter.CharacterEncodingFilter</filter-class>
@@ -49,7 +43,6 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-    <!-- 전역 보안 헤더 필터: XSS/클릭재킹 등 기본 방어 헤더 추가 -->
     <filter>
         <filter-name>SecurityHeadersFilter</filter-name>
         <filter-class>com.company.filter.SecurityHeadersFilter</filter-class>
@@ -59,7 +52,6 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-    <!-- 인증 필터: 세션 인증이 필요한 URL 보호 -->
     <filter>
         <filter-name>AuthFilter</filter-name>
         <filter-class>com.company.filter.AuthFilter</filter-class>
@@ -68,8 +60,7 @@
         <filter-name>AuthFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    
-    <!-- 서블릿 매핑 -->
+
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
         <servlet-class>com.company.controller.LoginServlet</servlet-class>
@@ -78,7 +69,7 @@
         <servlet-name>LoginServlet</servlet-name>
         <url-pattern>/login</url-pattern>
     </servlet-mapping>
-    
+
     <servlet>
         <servlet-name>LogoutServlet</servlet-name>
         <servlet-class>com.company.controller.LogoutServlet</servlet-class>
@@ -87,7 +78,7 @@
         <servlet-name>LogoutServlet</servlet-name>
         <url-pattern>/logout</url-pattern>
     </servlet-mapping>
-    
+
     <servlet>
         <servlet-name>DashboardServlet</servlet-name>
         <servlet-class>com.company.controller.DashboardServlet</servlet-class>
@@ -96,7 +87,11 @@
         <servlet-name>DashboardServlet</servlet-name>
         <url-pattern>/dashboard</url-pattern>
     </servlet-mapping>
-    
+    <servlet-mapping>
+        <servlet-name>DashboardServlet</servlet-name>
+        <url-pattern>/dashboard2</url-pattern>
+    </servlet-mapping>
+
     <servlet>
         <servlet-name>CustomersServlet</servlet-name>
         <servlet-class>com.company.controller.CustomersServlet</servlet-class>
@@ -105,7 +100,7 @@
         <servlet-name>CustomersServlet</servlet-name>
         <url-pattern>/customers</url-pattern>
     </servlet-mapping>
-    
+
     <servlet>
         <servlet-name>MaintenanceServlet</servlet-name>
         <servlet-class>com.company.controller.MaintenanceServlet</servlet-class>
@@ -114,7 +109,7 @@
         <servlet-name>MaintenanceServlet</servlet-name>
         <url-pattern>/maintenance</url-pattern>
     </servlet-mapping>
-    
+
     <servlet>
         <servlet-name>MeetingServlet</servlet-name>
         <servlet-class>com.company.controller.MeetingServlet</servlet-class>
@@ -123,7 +118,7 @@
         <servlet-name>MeetingServlet</servlet-name>
         <url-pattern>/meeting</url-pattern>
     </servlet-mapping>
-    
+
     <servlet>
         <servlet-name>TroubleshootingServlet</servlet-name>
         <servlet-class>com.company.controller.TroubleshootingServlet</servlet-class>
@@ -142,7 +137,6 @@
         <url-pattern>/comment</url-pattern>
     </servlet-mapping>
 
-    <!-- Favicon 서블릿: /favicon.ico -> /favicon.png 리다이렉트 -->
     <servlet>
         <servlet-name>FaviconServlet</servlet-name>
         <servlet-class>com.company.controller.FaviconServlet</servlet-class>
@@ -162,13 +156,16 @@
         <url-pattern>/mypage</url-pattern>
     </servlet-mapping>
 
-    <!-- Connection Pool 모니터링 서블릿은 @WebServlet 어노테이션으로 매핑됨 -->
+    <servlet>
+        <servlet-name>UserVmHostServlet</servlet-name>
+        <servlet-class>com.company.controller.UserVmHostServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserVmHostServlet</servlet-name>
+        <url-pattern>/vm-hosts</url-pattern>
+    </servlet-mapping>
 
-    <!-- 애플리케이션 생명주기 리스너: Connection Pool 자동 정리 -->
     <listener>
         <listener-class>com.company.listener.AppLifecycleListener</listener-class>
     </listener>
-
-    <!-- JSTL 설정 및 JspServlet 직접 선언은 제거하여 중복/오용 방지 -->
-
 </web-app>

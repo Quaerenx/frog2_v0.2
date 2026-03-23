@@ -74,6 +74,9 @@ public class MyPageServlet extends HttpServlet {
 
         UserDTO currentUser = (UserDTO) session.getAttribute("user");
         String formAction = request.getParameter("formAction");
+        if (formAction == null || formAction.isBlank()) {
+            formAction = request.getParameter("action");
+        }
 
         if ("updateProfile".equals(formAction)) {
             updateProfile(request, response, currentUser, session);
@@ -85,6 +88,8 @@ public class MyPageServlet extends HttpServlet {
             updateMonthlyResponse(request, response, currentUser);
         } else if ("deleteResponse".equals(formAction)) {
             deleteMonthlyResponse(request, response, currentUser);
+        } else {
+            showMyPage(request, response, currentUser);
         }
     }
 

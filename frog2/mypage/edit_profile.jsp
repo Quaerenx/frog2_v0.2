@@ -142,8 +142,8 @@
     </t:pageHeader>
     
     <div class="form-card">
-        <form action="mypage" method="post" onsubmit="return validateForm()">
-            <input type="hidden" name="action" value="updateProfile">
+        <form action="${pageContext.request.contextPath}/mypage" method="post" onsubmit="return validateForm()">
+            <input type="hidden" name="formAction" value="updateProfile">
             
             <div class="form-group">
                 <label class="form-label" for="userId">
@@ -168,7 +168,7 @@
                     <i class="fas fa-save"></i>
                     저장
                 </button>
-                <a href="mypage" class="btn btn-secondary">
+                <a href="${pageContext.request.contextPath}/mypage" class="btn btn-secondary">
                     <i class="fas fa-times"></i>
                     취소
                 </a>

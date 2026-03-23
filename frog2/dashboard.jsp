@@ -1,10 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="t" tagdir="/WEB-INF/tags" %>
 
 <c:set var="pageTitle" value="대시보드" scope="request" />
 <c:set var="pageBodyClass" value="page-1050 page-customers" scope="request" />
-<%@ taglib prefix="t" tagdir="/WEB-INF/tags" %>
 
 <!DOCTYPE html>
 <html>
@@ -12,109 +11,587 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${pageTitle}</title>
-  <!-- Favicon -->
   <link rel="icon" href="${pageContext.request.contextPath}/favicon.png?v=20251017" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/favicon.png?v=20251017">
-  <!-- 기본 스타일 로드 (헤더/푸터 없이 카드만 사용) -->
   <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/main_style.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/components.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/utilities.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/pages/dashboard.css">
-  <!-- 고객사 페이지 공통 톤(헤더/버튼)을 재사용 -->
   <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/pages/customers.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/pages/dashboard_box.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <style>
-    /* 카드 헤더 아이콘-타이틀 간격 최소화 (대시보드 카드 한정) */
-    .dashboard-card .card-header { display: flex; align-items: center; gap: 4px; }
-    .dashboard-card .card-header i { margin-right: 0; }
-    /* 서브메뉴: 아이콘과 텍스트 수평/수직 정렬 */
-    .dashboard-submenu a { display: inline-flex; align-items: center; }
-    /* 대시보드의 pageHeader 서브타이틀은 flex를 사용하지 않고 줄바꿈 허용 */
-    .customer-management .page-header .ph-subtitle { display: block !important; }
+    .dashboard-card .card-header,
+    .vm-board-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dashboard-submenu a {
+      display: inline-flex;
+      align-items: center;
+    }
+    .customer-management .page-header .ph-subtitle {
+      display: block !important;
+    }
+    .vm-board {
+      margin-bottom: 24px;
+    }
+    .vm-board-header {
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .vm-board-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .vm-board-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .vm-board-caption {
+      color: #64748b;
+      font-size: 0.92rem;
+      font-weight: 500;
+    }
+    .vm-add-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 16px;
+      border-radius: 10px;
+      border: 0;
+      background: #475569;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .vm-add-btn:hover {
+      background: #334155;
+    }
+    .vm-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 10px;
+      background: #e2e8f0;
+      color: #0f172a;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .vm-toggle-btn:hover {
+      background: #cbd5e1;
+    }
+    .vm-board-note {
+      margin: 0 0 16px;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .vm-board-body.is-collapsed {
+      display: none;
+    }
+    .vm-message,
+    .vm-error {
+      margin-bottom: 16px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+    .vm-message {
+      background: #ecfdf5;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+    .vm-error {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+    .vm-table-wrap {
+      border: 1px solid #e5edf6;
+      border-radius: 14px;
+      background: #fff;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+    .vm-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+    .vm-table th,
+    .vm-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #e5edf6;
+      text-align: left;
+      vertical-align: top;
+    }
+    .vm-table th {
+      background: #f8fafc;
+      color: #334155;
+      font-size: 0.92rem;
+    }
+    .vm-row-clickable {
+      cursor: pointer;
+    }
+    .vm-row-clickable:hover {
+      background: #f8fbff;
+    }
+    .vm-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(15, 23, 42, 0.52);
+      z-index: 2000;
+    }
+    .vm-modal-backdrop.is-open {
+      display: flex;
+    }
+    .vm-modal {
+      width: min(720px, 100%);
+      max-height: calc(100vh - 48px);
+      overflow: auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+    }
+    .vm-modal-header,
+    .vm-modal-footer {
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .vm-modal-header {
+      border-bottom: 1px solid #e5edf6;
+    }
+    .vm-modal-footer {
+      border-top: 1px solid #e5edf6;
+      flex-wrap: wrap;
+    }
+    .vm-modal-close {
+      border: 0;
+      background: transparent;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #475569;
+    }
+    .vm-modal-body {
+      padding: 22px;
+    }
+    .vm-form {
+      display: grid;
+      gap: 16px;
+    }
+    .vm-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .vm-form label {
+      display: grid;
+      gap: 6px;
+      font-weight: 600;
+      color: #334155;
+    }
+    .vm-form input,
+    .vm-form textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      background: #fff;
+    }
+    .vm-form textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+    .vm-btn,
+    .vm-btn-secondary,
+    .vm-btn-danger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .vm-btn {
+      background: #1d4ed8;
+      color: #fff;
+    }
+    .vm-btn-secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .vm-btn-danger {
+      background: #dc2626;
+      color: #fff;
+    }
+    .vm-modal-footer-left,
+    .vm-modal-footer-right {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    body.vm-modal-open {
+      overflow: hidden;
+    }
+    @media (max-width: 840px) {
+      .vm-form-grid {
+        grid-template-columns: 1fr;
+      }
+      .vm-modal-backdrop {
+        padding: 12px;
+      }
+    }
   </style>
 </head>
 <body class="page-1050 page-customers">
   <%@ include file="/includes/header.jsp" %>
 
-    <div class="customer-management">
-        <t:pageHeader>
-          <jsp:attribute name="title"><i class="fas fa-th-large"></i> 대시보드</jsp:attribute>
-          <jsp:attribute name="subtitle">
-            업무 바로가기와 핵심 메뉴를 한눈에 확인하세요
-            <br/>
-            <span style="display:block; margin-top:6px; font-weight:600;">안녕하세요 <c:out value="${sessionScope.user != null ? sessionScope.user.userName : ''}"/> 님</span>
-          </jsp:attribute>
-        </t:pageHeader>
-        <div class="card-grid">
-        <c:forEach var="entry" items="${dashboardMenus}">
-          <div class="card-item">
-            <div class="card dashboard-card">
-              <div class="card-header">
-                <c:set var="cat" value="${entry.key}" />
-                <c:choose>
-                  <c:when test="${cat == '고객관리'}"><i class="fas fa-address-book"></i></c:when>
-                  <c:when test="${cat == '자료관리'}"><i class="fas fa-folder-open"></i></c:when>
-                  <c:otherwise><i class="fas fa-th-large"></i></c:otherwise>
-                </c:choose>
-                ${entry.key}
-              </div>
-              <div class="card-body">
-                <ul class="dashboard-submenu">
-                  <c:forEach var="menuItem" items="${entry.value}">
-                    <c:set var="resolvedUrl" value="${menuItem.url}" />
-                    <c:if test="${resolvedUrl == 'downlist.jsp'}">
-                      <c:set var="resolvedUrl" value="filerepo/filerepo_downlist.jsp" />
-                    </c:if>
-                    <li>
-                      <a href="${pageContext.request.contextPath}/${resolvedUrl}">
-                        <i class="${menuItem.icon} fa-fw mr-2"></i>${menuItem.title}
-                      </a>
-                    </li>
+  <div class="customer-management">
+    <t:pageHeader>
+      <jsp:attribute name="title"><i class="fas fa-th-large"></i> 대시보드</jsp:attribute>
+      <jsp:attribute name="subtitle">
+        업무 바로가기와 운영 메뉴를 한 화면에서 확인합니다.<br/>
+        <span style="display:block; margin-top:6px; font-weight:600;">안녕하세요, <c:out value="${sessionScope.user != null ? sessionScope.user.userName : ''}"/> 님</span>
+      </jsp:attribute>
+    </t:pageHeader>
+
+    <div class="card dashboard-card vm-board">
+      <div class="card-header vm-board-header">
+        <div class="vm-board-title">
+          <i class="fas fa-network-wired"></i>
+          <span>개인 호스트 관리</span>
+          <span class="vm-board-caption">행을 클릭하면 수정 모달이 열립니다.</span>
+        </div>
+        <div class="vm-board-actions">
+          <button type="button" class="vm-toggle-btn" id="toggleVmHostBoardBtn">접기</button>
+          <button type="button" class="vm-add-btn" id="openVmHostAddBtn">호스트 등록</button>
+        </div>
+      </div>
+      <div class="card-body vm-board-body" id="vmHostBoardBody">
+        <c:if test="${param.vmHostResult == 'saved'}">
+          <div class="vm-message">호스트 정보가 저장되었습니다.</div>
+        </c:if>
+        <c:if test="${param.vmHostResult == 'deleted'}">
+          <div class="vm-message">호스트가 삭제되었습니다.</div>
+        </c:if>
+        <c:if test="${not empty vmHostErrorMessage}">
+          <div class="vm-error"><c:out value="${vmHostErrorMessage}"/></div>
+        </c:if>
+
+        <p class="vm-board-note">컬럼은 사용 호스트, 목적, OS, VERTICA-ver, 원격지, 비고만 표시합니다.</p>
+
+        <div class="vm-table-wrap">
+          <table class="vm-table">
+            <thead>
+              <tr>
+                <th>사용 호스트</th>
+                <th>목적</th>
+                <th>OS</th>
+                <th>VERTICA-ver</th>
+                <th>원격지</th>
+                <th>비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              <c:choose>
+                <c:when test="${empty vmHosts}">
+                  <tr>
+                    <td colspan="6">등록된 VM 호스트가 없습니다.</td>
+                  </tr>
+                </c:when>
+                <c:otherwise>
+                  <c:forEach var="host" items="${vmHosts}">
+                    <tr class="vm-row-clickable"
+                        data-ip="<c:out value='${host.ip}'/>"
+                        data-purpose="<c:out value='${host.purpose}'/>"
+                        data-os-info="<c:out value='${host.osInfo}'/>"
+                        data-vertica-version="<c:out value='${host.verticaVersion}'/>"
+                        data-remote-host="<c:out value='${host.remoteHost}'/>"
+                        data-note="<c:out value='${host.note}'/>">
+                      <td><strong><c:out value="${host.ip}"/></strong></td>
+                      <td><c:out value="${host.purpose}"/></td>
+                      <td><c:out value="${host.osInfo}"/></td>
+                      <td><c:out value="${host.verticaVersion}"/></td>
+                      <td><c:out value="${host.remoteHost}"/></td>
+                      <td><c:out value="${host.note}"/></td>
+                    </tr>
                   </c:forEach>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </c:forEach>
-          <!-- 추가 카드: 외부 링크 바로가기 리스트 -->
-          <div class="card-item">
-            <div class="card dashboard-card">
-              <div class="card-header">
-                <i class="fas fa-external-link-alt"></i> 바로가기
-              </div>
-              <div class="card-body">
-                <ul class="dashboard-submenu">
-                  <li>
-                    <a href="https://docs.vertica.com/" target="_blank" rel="noopener noreferrer">
-                      <i class="fas fa-link fa-fw mr-2"></i> Vertica 공식 홈페이지
-                    </a>
-                  </li>
-                  <li>
-                    <a href="https://x2wizard.github.io/" target="_blank" rel="noopener noreferrer">
-                      <i class="fas fa-link fa-fw mr-2"></i> Vertica 블로그
-                    </a>
-                  </li>
-                  <li>
-                    <a href="https://www.microfocus.com/lifecycle/" target="_blank" rel="noopener noreferrer">
-                      <i class="fas fa-link fa-fw mr-2"></i> Vertica EOS 정보
-                    </a>
-                  </li>
-                  <li>
-                    <a href="https://portal.microfocus.com/s/customdetailpage" target="_blank" rel="noopener noreferrer">
-                      <i class="fas fa-link fa-fw mr-2"></i> Vertica Caseopen
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
+                </c:otherwise>
+              </c:choose>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
+    <div class="card-grid">
+      <c:forEach var="entry" items="${dashboardMenus}">
+        <div class="card-item">
+          <div class="card dashboard-card">
+            <div class="card-header">
+              <c:set var="cat" value="${entry.key}" />
+              <c:choose>
+                <c:when test="${cat == '고객 관리'}"><i class="fas fa-address-book"></i></c:when>
+                <c:when test="${cat == '자료 관리'}"><i class="fas fa-folder-open"></i></c:when>
+                <c:when test="${cat == '인프라 관리'}"><i class="fas fa-server"></i></c:when>
+                <c:otherwise><i class="fas fa-th-large"></i></c:otherwise>
+              </c:choose>
+              ${entry.key}
+            </div>
+            <div class="card-body">
+              <ul class="dashboard-submenu">
+                <c:forEach var="menuItem" items="${entry.value}">
+                  <li>
+                    <a href="${pageContext.request.contextPath}/${menuItem.url}">
+                      <i class="${menuItem.icon} fa-fw mr-2"></i>${menuItem.title}
+                    </a>
+                  </li>
+                </c:forEach>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </c:forEach>
+
+      <div class="card-item">
+        <div class="card dashboard-card">
+          <div class="card-header">
+            <i class="fas fa-external-link-alt"></i> 바로가기
+          </div>
+          <div class="card-body">
+            <ul class="dashboard-submenu">
+              <li>
+                <a href="https://docs.vertica.com/" target="_blank" rel="noopener noreferrer">
+                  <i class="fas fa-link fa-fw mr-2"></i> Vertica 공식 문서
+                </a>
+              </li>
+              <li>
+                <a href="https://x2wizard.github.io/" target="_blank" rel="noopener noreferrer">
+                  <i class="fas fa-link fa-fw mr-2"></i> Vertica 블로그
+                </a>
+              </li>
+              <li>
+                <a href="https://www.microfocus.com/lifecycle/" target="_blank" rel="noopener noreferrer">
+                  <i class="fas fa-link fa-fw mr-2"></i> Vertica EOS 정보
+                </a>
+              </li>
+              <li>
+                <a href="https://portal.microfocus.com/s/customdetailpage" target="_blank" rel="noopener noreferrer">
+                  <i class="fas fa-link fa-fw mr-2"></i> Vertica Case Open
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <c:if test="${not empty vmHostForm}">
+    <div id="vmHostFormSeed" hidden
+         data-ip="<c:out value='${vmHostForm.ip}'/>"
+         data-original-ip="<c:out value='${vmHostForm.ip}'/>"
+         data-purpose="<c:out value='${vmHostForm.purpose}'/>"
+         data-os-info="<c:out value='${vmHostForm.osInfo}'/>"
+         data-vertica-version="<c:out value='${vmHostForm.verticaVersion}'/>"
+         data-remote-host="<c:out value='${vmHostForm.remoteHost}'/>"
+         data-note="<c:out value='${vmHostForm.note}'/>"></div>
+  </c:if>
+
+  <div class="vm-modal-backdrop" id="vmHostModalBackdrop">
+    <div class="vm-modal" role="dialog" aria-modal="true" aria-labelledby="vmHostModalTitle">
+      <div class="vm-modal-header">
+        <h3 id="vmHostModalTitle">호스트 등록</h3>
+        <button type="button" class="vm-modal-close" id="closeVmHostModalBtn" aria-label="닫기">×</button>
+      </div>
+      <div class="vm-modal-body">
+        <form class="vm-form" id="vmHostSaveForm" method="post" action="${pageContext.request.contextPath}/vm-hosts">
+          <input type="hidden" name="action" value="save" />
+          <input type="hidden" name="returnTo" value="dashboard" />
+          <input type="hidden" name="originalIp" id="vmHostOriginalIp" />
+
+          <label>
+            사용 호스트
+            <input type="text" name="ip" id="vmHostIp" maxlength="15" placeholder="192.168.40.60" required />
+          </label>
+
+          <label>
+            목적
+            <input type="text" name="purpose" id="vmHostPurpose" maxlength="500" placeholder="예: 개인 개발 VM" required />
+          </label>
+
+          <div class="vm-form-grid">
+            <label>
+              OS
+              <input type="text" name="osInfo" id="vmHostOsInfo" maxlength="100" placeholder="예: Ubuntu 22.04.5" />
+            </label>
+
+            <label>
+              VERTICA-ver
+              <input type="text" name="verticaVersion" id="vmHostVerticaVersion" maxlength="50" placeholder="예: 24.3.0-3" />
+            </label>
+          </div>
+
+          <label>
+            원격지
+            <input type="text" name="remoteHost" id="vmHostRemoteHost" maxlength="100" placeholder="예: 192.168.40.160" />
+          </label>
+
+          <label>
+            비고
+            <textarea name="note" id="vmHostNote" placeholder="메모, 계정, 용도 등을 기록하세요."></textarea>
+          </label>
+        </form>
+      </div>
+      <div class="vm-modal-footer">
+        <div class="vm-modal-footer-left">
+          <form id="vmHostDeleteForm" method="post" action="${pageContext.request.contextPath}/vm-hosts" style="display:none;">
+            <input type="hidden" name="action" value="delete" />
+            <input type="hidden" name="returnTo" value="dashboard" />
+            <input type="hidden" name="ip" id="vmHostDeleteIp" />
+            <button type="submit" class="vm-btn-danger" onclick="return confirm('해당 호스트를 삭제하시겠습니까?');">삭제</button>
+          </form>
+        </div>
+        <div class="vm-modal-footer-right">
+          <button type="button" class="vm-btn-secondary" id="cancelVmHostModalBtn">취소</button>
+          <button type="submit" class="vm-btn" form="vmHostSaveForm">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <%@ include file="/includes/footer.jsp" %>
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    (function() {
+      const backdrop = document.getElementById('vmHostModalBackdrop');
+      const boardBody = document.getElementById('vmHostBoardBody');
+      const toggleBoardBtn = document.getElementById('toggleVmHostBoardBtn');
+      const modalTitle = document.getElementById('vmHostModalTitle');
+      const openAddBtn = document.getElementById('openVmHostAddBtn');
+      const closeBtn = document.getElementById('closeVmHostModalBtn');
+      const cancelBtn = document.getElementById('cancelVmHostModalBtn');
+      const deleteForm = document.getElementById('vmHostDeleteForm');
+      const originalIpInput = document.getElementById('vmHostOriginalIp');
+      const ipInput = document.getElementById('vmHostIp');
+      const purposeInput = document.getElementById('vmHostPurpose');
+      const osInfoInput = document.getElementById('vmHostOsInfo');
+      const verticaVersionInput = document.getElementById('vmHostVerticaVersion');
+      const remoteHostInput = document.getElementById('vmHostRemoteHost');
+      const noteInput = document.getElementById('vmHostNote');
+      const deleteIpInput = document.getElementById('vmHostDeleteIp');
+      const collapseStorageKey = 'frog2.dashboard.personal-hosts.collapsed';
+
+      function setBoardCollapsed(collapsed) {
+        boardBody.classList.toggle('is-collapsed', collapsed);
+        toggleBoardBtn.textContent = collapsed ? '펼치기' : '접기';
+        try {
+          localStorage.setItem(collapseStorageKey, collapsed ? 'true' : 'false');
+        } catch (ignore) {}
+      }
+
+      function openModal() {
+        backdrop.classList.add('is-open');
+        document.body.classList.add('vm-modal-open');
+      }
+
+      function closeModal() {
+        backdrop.classList.remove('is-open');
+        document.body.classList.remove('vm-modal-open');
+      }
+
+      function populateModal(data, isEdit) {
+        modalTitle.textContent = isEdit ? '호스트 수정' : '호스트 등록';
+        originalIpInput.value = isEdit ? (data.originalIp || data.ip || '') : '';
+        ipInput.value = data.ip || '';
+        purposeInput.value = data.purpose || '';
+        osInfoInput.value = data.osInfo || '';
+        verticaVersionInput.value = data.verticaVersion || '';
+        remoteHostInput.value = data.remoteHost || '';
+        noteInput.value = data.note || '';
+        deleteIpInput.value = isEdit ? (data.originalIp || data.ip || '') : '';
+        deleteForm.style.display = isEdit ? 'block' : 'none';
+        openModal();
+      }
+
+      openAddBtn.addEventListener('click', function() {
+        populateModal({}, false);
+      });
+
+      toggleBoardBtn.addEventListener('click', function() {
+        setBoardCollapsed(!boardBody.classList.contains('is-collapsed'));
+      });
+
+      document.querySelectorAll('.vm-row-clickable').forEach(function(row) {
+        row.addEventListener('click', function() {
+          populateModal({
+            ip: row.dataset.ip || '',
+            originalIp: row.dataset.ip || '',
+            purpose: row.dataset.purpose || '',
+            osInfo: row.dataset.osInfo || '',
+            verticaVersion: row.dataset.verticaVersion || '',
+            remoteHost: row.dataset.remoteHost || '',
+            note: row.dataset.note || ''
+          }, true);
+        });
+      });
+
+      closeBtn.addEventListener('click', closeModal);
+      cancelBtn.addEventListener('click', closeModal);
+
+      backdrop.addEventListener('click', function(event) {
+        if (event.target === backdrop) {
+          closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && backdrop.classList.contains('is-open')) {
+          closeModal();
+        }
+      });
+
+      const formSeed = document.getElementById('vmHostFormSeed');
+      if (formSeed) {
+        populateModal({
+          ip: formSeed.dataset.ip || '',
+          originalIp: formSeed.dataset.originalIp || '',
+          purpose: formSeed.dataset.purpose || '',
+          osInfo: formSeed.dataset.osInfo || '',
+          verticaVersion: formSeed.dataset.verticaVersion || '',
+          remoteHost: formSeed.dataset.remoteHost || '',
+          note: formSeed.dataset.note || ''
+        }, !!formSeed.dataset.originalIp);
+      }
+
+      try {
+        setBoardCollapsed(localStorage.getItem(collapseStorageKey) === 'true');
+      } catch (ignore) {
+        setBoardCollapsed(false);
+      }
+    })();
+  </script>
 </body>
 </html>

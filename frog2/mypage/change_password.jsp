@@ -8,6 +8,9 @@
         response.sendRedirect(request.getContextPath() + "/login");
         return;
     }
+
+    String message = (String) request.getAttribute("message");
+    String messageType = (String) request.getAttribute("messageType");
 %>
 <c:set var="pageTitle" value="비밀번호 변경" scope="request" />
 
@@ -175,8 +178,15 @@
             </ul>
         </div>
         
-        <form action="mypage" method="post" onsubmit="return validatePassword()">
-            <input type="hidden" name="action" value="updatePassword">
+        <% if (message != null) { %>
+            <div class="alert alert-<%= messageType %>">
+                <i class="fas fa-<%= "success".equals(messageType) ? "check-circle" : "exclamation-circle" %>"></i>
+                <%= message %>
+            </div>
+        <% } %>
+
+        <form action="${pageContext.request.contextPath}/mypage" method="post" onsubmit="return validatePassword()">
+            <input type="hidden" name="formAction" value="updatePassword">
             
             <div class="form-group">
                 <label class="form-label" for="currentPassword">
@@ -208,7 +218,7 @@
                     <i class="fas fa-save"></i>
                     변경
                 </button>
-                <a href="mypage" class="btn btn-secondary">
+                <a href="${pageContext.request.contextPath}/mypage" class="btn btn-secondary">
                     <i class="fas fa-times"></i>
                     취소
                 </a>
