@@ -10,29 +10,46 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.company.util.DBConnection;
 
 public class MaintenanceRecordDAO {
 
+    private final Map<String, Boolean> columnExistsCache = new ConcurrentHashMap<>();
+    private volatile boolean renameCheckCompleted = false;
+
     // licnese_usage_pct ?�탈??컬럼??존재?�고 ?�식 컬럼???�으�??�키마�? ?�정?�다.
     private void ensureUsagePctColumnRenamed() {
+        if (renameCheckCompleted) {
+            return;
+        }
+
+        synchronized (this) {
+            if (renameCheckCompleted) {
+                return;
+            }
+
         Connection conn = null;
         Statement stmt = null;
         try {
             conn = DBConnection.getConnection();
-            boolean hasTypo = columnExists(conn, "maintenance_records", "licnese_usage_pct");
-            boolean hasCorrect = columnExists(conn, "maintenance_records", "license_usage_pct");
+            boolean hasTypo = queryColumnExists(conn, "maintenance_records", "licnese_usage_pct");
+            boolean hasCorrect = queryColumnExists(conn, "maintenance_records", "license_usage_pct");
             if (hasTypo && !hasCorrect) {
                 stmt = conn.createStatement();
                 stmt.executeUpdate("ALTER TABLE maintenance_records RENAME COLUMN licnese_usage_pct TO license_usage_pct");
+                columnExistsCache.clear();
             }
         } catch (Exception ignored) {
             // 무해?�게 무시 (권한 ?�거???��? 처리??경우)
         } finally {
+            renameCheckCompleted = true;
             DBConnection.close(stmt);
             DBConnection.close(conn);
+        }
         }
     }
 
@@ -46,13 +63,13 @@ public class MaintenanceRecordDAO {
 
         try {
             conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM maintenance_records ORDER BY inspector_name, inspection_date DESC";
-            pstmt = conn.prepareStatement(sql);
-            rs = pstmt.executeQuery();
-
             boolean hasSize = columnExists(conn, "maintenance_records", "license_size_gb");
             boolean hasUsagePct = columnExists(conn, "maintenance_records", "license_usage_pct");
             boolean hasUsageSize = columnExists(conn, "maintenance_records", "license_usage_size");
+
+            String sql = "SELECT * FROM maintenance_records ORDER BY inspector_name, inspection_date DESC";
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
 
             while (rs.next()) {
                 MaintenanceRecordDTO record = mapRowToDto(rs, hasSize, hasUsagePct, hasUsageSize);
@@ -78,13 +95,13 @@ public class MaintenanceRecordDAO {
 
         try {
             conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM maintenance_records ORDER BY inspection_date DESC";
-            pstmt = conn.prepareStatement(sql);
-            rs = pstmt.executeQuery();
-
             boolean hasSize = columnExists(conn, "maintenance_records", "license_size_gb");
             boolean hasUsagePct = columnExists(conn, "maintenance_records", "license_usage_pct");
             boolean hasUsageSize = columnExists(conn, "maintenance_records", "license_usage_size");
+
+            String sql = "SELECT * FROM maintenance_records ORDER BY inspection_date DESC";
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
 
             while (rs.next()) {
                 MaintenanceRecordDTO record = mapRowToDto(rs, hasSize, hasUsagePct, hasUsageSize);
@@ -268,14 +285,14 @@ public class MaintenanceRecordDAO {
 
         try {
             conn = DBConnection.getConnection();
+            boolean hasSize = columnExists(conn, "maintenance_records", "license_size_gb");
+            boolean hasUsagePct = columnExists(conn, "maintenance_records", "license_usage_pct");
+            boolean hasUsageSize = columnExists(conn, "maintenance_records", "license_usage_size");
+
             String sql = "SELECT * FROM maintenance_records WHERE maintenance_id = ?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setLong(1, maintenanceId);
             rs = pstmt.executeQuery();
-
-            boolean hasSize = columnExists(conn, "maintenance_records", "license_size_gb");
-            boolean hasUsagePct = columnExists(conn, "maintenance_records", "license_usage_pct");
-            boolean hasUsageSize = columnExists(conn, "maintenance_records", "license_usage_size");
 
             if (rs.next()) {
                 record = mapRowToDto(rs, hasSize, hasUsagePct, hasUsageSize);
@@ -299,14 +316,14 @@ public class MaintenanceRecordDAO {
 
         try {
             conn = DBConnection.getConnection();
+            boolean hasSize = columnExists(conn, "maintenance_records", "license_size_gb");
+            boolean hasUsagePct = columnExists(conn, "maintenance_records", "license_usage_pct");
+            boolean hasUsageSize = columnExists(conn, "maintenance_records", "license_usage_size");
+
             String sql = "SELECT * FROM maintenance_records WHERE customer_name = ? ORDER BY inspection_date DESC";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, customerName);
             rs = pstmt.executeQuery();
-
-            boolean hasSize = columnExists(conn, "maintenance_records", "license_size_gb");
-            boolean hasUsagePct = columnExists(conn, "maintenance_records", "license_usage_pct");
-            boolean hasUsageSize = columnExists(conn, "maintenance_records", "license_usage_size");
 
             while (rs.next()) {
                 MaintenanceRecordDTO record = mapRowToDto(rs, hasSize, hasUsagePct, hasUsageSize);
@@ -382,9 +399,14 @@ public class MaintenanceRecordDAO {
 
                 Map<String, Object> point = new LinkedHashMap<>();
                 point.put("date", df.format(d));
-                if (pct != null) point.put("value", pct); // 기존 ?�환 ??                else point.put("value", null);
-                point.put("pct", pct);       // 명시 ??                point.put("usedTb", usedTb);  // ?�용??TB)
-                point.put("sizeTb", sizeTb);  // ?�이?�스 ?�기(TB)
+                if (pct != null) {
+                    point.put("value", pct);
+                } else {
+                    point.put("value", null);
+                }
+                point.put("pct", pct);
+                point.put("usedTb", usedTb);
+                point.put("sizeTb", sizeTb);
                 points.add(point);
             }
         } catch (SQLException  e) {
@@ -475,6 +497,18 @@ public class MaintenanceRecordDAO {
     }
 
     private boolean columnExists(Connection conn, String tableName, String columnName) {
+        String key = tableName.toLowerCase(Locale.ROOT) + ":" + columnName.toLowerCase(Locale.ROOT);
+        Boolean cached = columnExistsCache.get(key);
+        if (cached != null) {
+            return cached;
+        }
+
+        boolean exists = queryColumnExists(conn, tableName, columnName);
+        columnExistsCache.put(key, exists);
+        return exists;
+    }
+
+    private boolean queryColumnExists(Connection conn, String tableName, String columnName) {
         ResultSet rs = null;
         try {
             java.sql.DatabaseMetaData meta = conn.getMetaData();
@@ -558,14 +592,14 @@ public class MaintenanceRecordDAO {
 
         try {
             conn = DBConnection.getConnection();
+            boolean hasSize = columnExists(conn, "maintenance_records", "license_size_gb");
+            boolean hasUsagePct = columnExists(conn, "maintenance_records", "license_usage_pct");
+            boolean hasUsageSize = columnExists(conn, "maintenance_records", "license_usage_size");
+
             String sql = "SELECT * FROM maintenance_records WHERE inspector_name = ? ORDER BY inspection_date DESC";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, inspectorName);
             rs = pstmt.executeQuery();
-
-            boolean hasSize = columnExists(conn, "maintenance_records", "license_size_gb");
-            boolean hasUsagePct = columnExists(conn, "maintenance_records", "license_usage_pct");
-            boolean hasUsageSize = columnExists(conn, "maintenance_records", "license_usage_size");
 
             while (rs.next()) {
                 MaintenanceRecordDTO record = mapRowToDto(rs, hasSize, hasUsagePct, hasUsageSize);

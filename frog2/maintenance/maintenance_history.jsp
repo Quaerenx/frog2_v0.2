@@ -538,8 +538,8 @@
                                     <span class="detail-label">라이선스</span>
                                     <span class="detail-value">
                                         <c:choose>
-                                            <c:when test="${not empty licenseSummaries[record.maintenanceId]}">
-                                                <c:out value="${licenseSummaries[record.maintenanceId]}" />
+                                            <c:when test="${not empty record.licenseSummary}">
+                                                <c:out value="${record.licenseSummary}" />
                                             </c:when>
                                             <c:otherwise>-</c:otherwise>
                                         </c:choose>
@@ -728,6 +728,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // 히스토리 아이템 애니메이션
     const historyItems = document.querySelectorAll('.history-item');
+    const staggerStep = historyItems.length > 20 ? 15 : 40;
+    const maxDelay = 240;
     
     historyItems.forEach((item, index) => {
         item.style.opacity = '0';
@@ -737,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
             item.style.transition = 'all 0.5s ease';
             item.style.opacity = '1';
             item.style.transform = 'translateY(0)';
-        }, index * 100);
+        }, Math.min(index * staggerStep, maxDelay));
     });
     
     // 삭제 확인 강화
