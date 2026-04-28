@@ -132,7 +132,8 @@ public class CustomerDetailDAO {
         detail.setStorageYn(rs.getString("storage_yn"));
         detail.setStorageNetwork(rs.getString("storage_network"));
 
-        // ?¸ë? ?”ë£¨??        detail.setEtlTool(rs.getString("etl_tool"));
+        // External solutions
+        detail.setEtlTool(rs.getString("etl_tool"));
         detail.setBiTool(rs.getString("bi_tool"));
         detail.setDbEncryption(rs.getString("db_encryption"));
         detail.setCdcTool(rs.getString("cdc_tool"));

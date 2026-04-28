@@ -12,16 +12,16 @@
         response.sendRedirect(request.getContextPath() + "/login");
         return;
     }
-    
+
     List<MonthlyCustomerResponseDTO> monthlyResponses = (List<MonthlyCustomerResponseDTO>) request.getAttribute("monthlyResponses");
     Integer selectedYear = (Integer) request.getAttribute("selectedYear");
     Integer selectedMonth = (Integer) request.getAttribute("selectedMonth");
     Boolean hasData = (Boolean) request.getAttribute("hasData");
     String message = (String) request.getAttribute("message");
     String messageType = (String) request.getAttribute("messageType");
-    
+
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-    
+
     // 현재 연도
     java.util.Calendar cal = java.util.Calendar.getInstance();
     int currentYear = cal.get(java.util.Calendar.YEAR);
@@ -47,7 +47,7 @@
             margin: 0 auto;
             padding: 32px 16px;
         }
-        
+
         .filter-card {
             background: white;
             padding: 24px;
@@ -55,7 +55,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
-        
+
         .filter-header {
             display: flex;
             align-items: center;
@@ -64,19 +64,21 @@
             padding-bottom: 12px;
             border-bottom: 2px solid #e5e7eb;
         }
-        
+
         .filter-header h3 {
             margin: 0;
             font-size: 1.125rem;
             color: #333333;
         }
-        
+
         .filter-form {
             display: flex;
             gap: 12px;
             align-items: flex-end;
+            justify-content: flex-start;
+            flex-wrap: wrap;
         }
-        
+
         .filter-inputs {
             display: flex;
             gap: 12px;
@@ -84,25 +86,19 @@
             flex-wrap: wrap;
             flex: 1;
         }
-        
-        .filter-actions {
-            display: flex;
-            gap: 8px;
-            align-items: flex-end;
-        }
-        
+
         .form-group {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
-        
+
         .form-group label {
             font-size: 0.875rem;
             font-weight: 600;
             color: #666666;
         }
-        
+
         .form-group select {
             padding: 8px 12px;
             border: 1px solid #d1d5db;
@@ -110,7 +106,7 @@
             font-size: 0.875rem;
             min-width: 150px;
         }
-        
+
         .btn {
             padding: 8px 16px;
             border: none;
@@ -124,16 +120,55 @@
             transition: all 0.2s;
             font-weight: 500;
         }
-        
+
         .btn-primary {
             background-color: #3D5A80;
             color: white;
         }
-        
+
         .btn-primary:hover {
             background-color: #2d4460;
         }
-        
+
+        .monthly-response-container .add-button {
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.2;
+        }
+
+        .btn-min {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.2;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            color: #374151;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-min:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .btn-min.primary {
+            border-color: transparent;
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn-min.primary:hover {
+            background: #2f4968;
+            color: #ffffff;
+        }
+
         .results-card {
             background: white;
             padding: 24px;
@@ -141,16 +176,18 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
-        
+
         .results-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
             margin-bottom: 16px;
             padding-bottom: 12px;
             border-bottom: 2px solid #e5e7eb;
         }
-        
+
         .results-header h3 {
             margin: 0;
             font-size: 1.125rem;
@@ -159,21 +196,21 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .table-responsive {
             overflow-x: auto;
         }
-        
+
         .data-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.875rem;
         }
-        
+
         .data-table thead {
             background-color: #f9fafb;
         }
-        
+
         .data-table th {
             padding: 12px;
             text-align: left;
@@ -182,28 +219,28 @@
             border-bottom: 2px solid #e5e7eb;
             white-space: nowrap;
         }
-        
+
         .data-table td {
             padding: 12px;
             border-bottom: 1px solid #e5e7eb;
             color: #4b5563;
             vertical-align: top;
         }
-        
+
         .data-table tbody tr:hover {
             background-color: #f9fafb;
         }
-        
+
         .data-table a {
             color: #3D5A80;
             text-decoration: none;
             font-weight: 500;
         }
-        
+
         .data-table a:hover {
             text-decoration: underline;
         }
-        
+
         .badge {
             display: inline-block;
             padding: 4px 8px;
@@ -211,34 +248,34 @@
             font-size: 0.75rem;
             font-weight: 600;
         }
-        
+
         .badge-maintenance {
             background-color: #dbeafe;
             color: #1e40af;
         }
-        
+
         .badge-troubleshooting {
             background-color: #fee2e2;
             color: #991b1b;
         }
-        
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #9ca3af;
         }
-        
+
         .empty-state i {
             font-size: 3.5rem;
             margin-bottom: 16px;
             opacity: 0.5;
         }
-        
+
         .empty-state p {
             font-size: 1rem;
-            margin: 0;
+            margin: 0 0 16px 0;
         }
-        
+
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -249,48 +286,48 @@
             font-weight: 500;
             margin-bottom: 16px;
         }
-        
+
         .back-link:hover {
             text-decoration: underline;
         }
-        
+
         /* 날짜 컬럼 너비 */
         .data-table th:nth-child(1),
         .data-table td:nth-child(1) {
             width: 110px;
         }
-        
+
         /* 고객명 컬럼 너비 */
         .data-table th:nth-child(2),
         .data-table td:nth-child(2) {
             width: 150px;
         }
-        
+
         /* 사유 컬럼 너비 */
         .data-table th:nth-child(3),
         .data-table td:nth-child(3) {
             width: 180px;
         }
-        
+
         /* 조치 내용 - 가장 넓게 (자동 너비) */
         .data-table th:nth-child(4),
         .data-table td:nth-child(4) {
             width: auto;
         }
-        
+
         /* 비고 컬럼 너비 */
         .data-table th:nth-child(5),
         .data-table td:nth-child(5) {
             width: 180px;
         }
-        
+
         /* 액션 버튼 스타일 */
         .action-buttons {
             display: flex;
             gap: 8px;
             justify-content: center;
         }
-        
+
         .btn-icon {
             padding: 6px 10px;
             border: none;
@@ -302,40 +339,29 @@
             align-items: center;
             gap: 4px;
         }
-        
+
         .btn-edit {
             background-color: #5B8FB9;
             color: white;
         }
-        
+
         .btn-edit:hover {
             background-color: #4A7BA0;
             transform: translateY(-1px);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
+
         .btn-delete {
             background-color: #B66B6B;
             color: white;
         }
-        
+
         .btn-delete:hover {
             background-color: #A05555;
             transform: translateY(-1px);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
-        .btn-success {
-            background-color: #6B9B8C;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background-color: #5A8476;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
+
         /* 모달 스타일 */
         .modal {
             display: none;
@@ -349,12 +375,12 @@
             background-color: rgba(0,0,0,0.5);
             animation: fadeIn 0.2s;
         }
-        
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        
+
         .modal-content {
             background-color: white;
             margin: 5% auto;
@@ -365,12 +391,12 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             animation: slideDown 0.3s;
         }
-        
+
         @keyframes slideDown {
             from { transform: translateY(-50px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-        
+
         .modal-header {
             padding: 20px 24px;
             background-color: #3D5A80;
@@ -380,12 +406,12 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .modal-header h2 {
             margin: 0;
             font-size: 1.25rem;
         }
-        
+
         .close {
             color: white;
             font-size: 1.5rem;
@@ -401,19 +427,19 @@
             justify-content: center;
             border-radius: 4px;
         }
-        
+
         .close:hover {
             background-color: rgba(255,255,255,0.1);
         }
-        
+
         .modal-body {
             padding: 24px;
         }
-        
+
         .modal-form-group {
             margin-bottom: 16px;
         }
-        
+
         .modal-form-group label {
             display: block;
             margin-bottom: 6px;
@@ -421,7 +447,7 @@
             color: #374151;
             font-size: 0.875rem;
         }
-        
+
         .modal-form-group input,
         .modal-form-group textarea,
         .modal-form-group select {
@@ -432,16 +458,16 @@
             font-size: 0.875rem;
             box-sizing: border-box;
         }
-        
+
         .modal-form-group textarea {
             min-height: 100px;
             resize: vertical;
         }
-        
+
         .required {
             color: #ef4444;
         }
-        
+
         .modal-footer {
             padding: 16px 24px;
             background-color: #f9fafb;
@@ -450,16 +476,16 @@
             justify-content: flex-end;
             gap: 8px;
         }
-        
+
         .btn-cancel {
             background-color: #6b7280;
             color: white;
         }
-        
+
         .btn-cancel:hover {
             background-color: #4b5563;
         }
-        
+
         /* 알림 메시지 */
         .alert {
             padding: 12px 16px;
@@ -469,56 +495,58 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .alert-success {
             background-color: #d1fae5;
             color: #065f46;
             border: 1px solid #6ee7b7;
         }
-        
+
         .alert-error {
             background-color: #fee2e2;
             color: #991b1b;
             border: 1px solid #fca5a5;
         }
-        
+
         @media (max-width: 768px) {
             .filter-form {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .filter-inputs {
                 flex-direction: column;
             }
-            
-            .filter-actions {
-                width: 100%;
-            }
-            
+
             .form-group select {
                 width: 100%;
             }
-            
+
             .btn {
                 width: 100%;
                 justify-content: center;
             }
-            
+
             /* 모바일에서는 컬럼 너비 제한 제거 */
             .data-table th,
             .data-table td {
                 width: auto !important;
                 min-width: auto !important;
             }
-            
+
             .modal-content {
                 width: 95%;
                 margin: 10% auto;
             }
-            
+
             .action-buttons {
                 flex-direction: column;
+            }
+
+            .results-header .btn-min,
+            .empty-state .add-button {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -531,7 +559,7 @@
         <i class="fas fa-arrow-left"></i>
         마이페이지로 돌아가기
     </a>
-    
+
     <t:pageHeader>
         <jsp:attribute name="title">
             <i class="fas fa-calendar-alt"></i> 월별 고객 응대 현황
@@ -539,8 +567,13 @@
         <jsp:attribute name="subtitle">
             월별 고객 응대 및 트러블슈팅 작업 현황
         </jsp:attribute>
+        <jsp:attribute name="actions">
+            <button type="button" class="add-button" onclick="openAddModal()">
+                <i class="fas fa-plus"></i> 응대 추가
+            </button>
+        </jsp:attribute>
     </t:pageHeader>
-    
+
     <!-- 알림 메시지 -->
     <% if (message != null) { %>
     <div class="alert alert-<%= messageType %>">
@@ -548,7 +581,7 @@
         <%= message %>
     </div>
     <% } %>
-    
+
     <!-- 필터 옵션 -->
     <div class="filter-card">
         <div class="filter-header">
@@ -579,24 +612,18 @@
                     </select>
                 </div>
             </div>
-            <div class="filter-actions" style="display: none;">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search"></i>
-                    조회
-                </button>
-            </div>
         </form>
     </div>
-    
+
     <!-- 월별 응대 데이터 -->
-    <% if (hasData != null && hasData && monthlyResponses != null && !monthlyResponses.isEmpty()) { %>
+    <% if (monthlyResponses != null && !monthlyResponses.isEmpty()) { %>
     <div class="results-card">
         <div class="results-header">
             <h3>
                 <i class="fas fa-calendar-check"></i>
                 <%= selectedYear %>년 <%= selectedMonth %>월 고객 응대 현황 (<%= monthlyResponses.size() %>건)
             </h3>
-            <button type="button" class="btn btn-success" onclick="openAddModal()">
+            <button type="button" class="btn-min primary" onclick="openAddModal()">
                 <i class="fas fa-plus"></i> 추가
             </button>
         </div>
@@ -622,11 +649,11 @@
                         <td><%= dto.getNote() != null ? dto.getNote() : "-" %></td>
                         <td>
                             <div class="action-buttons">
-                                <button type="button" class="btn-icon btn-edit" 
+                                <button type="button" class="btn-icon btn-edit"
                                     onclick="openEditModal(<%= dto.getId() %>, '<%= sdf.format(dto.getResponseDate()) %>', '<%= dto.getCustomerName() %>', '<%= dto.getReason() %>', '<%= dto.getActionContent() != null ? dto.getActionContent().replace("'", "\\'").replace("\n", "\\n") : "" %>', '<%= dto.getNote() != null ? dto.getNote().replace("'", "\\'").replace("\n", "\\n") : "" %>')">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button type="button" class="btn-icon btn-delete" 
+                                <button type="button" class="btn-icon btn-delete"
                                     onclick="deleteResponse(<%= dto.getId() %>)">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -639,29 +666,25 @@
         </div>
     </div>
     <% } %>
-    
+
     <!-- 데이터가 없을 때 -->
-    <% if (hasData == null || !hasData) { %>
-    <div class="results-card">
-        <div class="empty-state">
-            <i class="fas fa-calendar-alt"></i>
-            <p>조회할 연도와 월을 선택하면 자동으로 검색됩니다</p>
-        </div>
-    </div>
-    <% } else if (monthlyResponses == null || monthlyResponses.isEmpty()) { %>
+    <% if (monthlyResponses == null || monthlyResponses.isEmpty()) { %>
     <div class="results-card">
         <div class="results-header">
             <h3>
                 <i class="fas fa-calendar-check"></i>
                 <%= selectedYear %>년 <%= selectedMonth %>월 고객 응대 현황
             </h3>
-            <button type="button" class="btn btn-success" onclick="openAddModal()">
+            <button type="button" class="btn-min primary" onclick="openAddModal()">
                 <i class="fas fa-plus"></i> 추가
             </button>
         </div>
         <div class="empty-state">
             <i class="fas fa-inbox"></i>
             <p><%= selectedYear %>년 <%= selectedMonth %>월에는 고객 응대 기록이 없습니다.</p>
+            <button type="button" class="add-button" onclick="openAddModal()">
+                <i class="fas fa-plus"></i> 첫 응대 기록 추가
+            </button>
         </div>
     </div>
     <% } %>
@@ -675,38 +698,38 @@
             <button class="close" onclick="closeModal()">&times;</button>
         </div>
         <form id="responseForm" method="POST" action="${pageContext.request.contextPath}/mypage">
-            <input type="hidden" name="formAction" id="formAction" value="add">
+            <input type="hidden" name="formAction" id="formAction" value="addResponse">
             <input type="hidden" name="responseId" id="responseId">
             <input type="hidden" name="year" value="<%= selectedYear != null ? selectedYear : currentYear %>">
             <input type="hidden" name="month" value="<%= selectedMonth != null ? selectedMonth : currentMonth %>">
-            
+
             <div class="modal-body">
                 <div class="modal-form-group">
                     <label for="responseDate">날짜 <span class="required">*</span></label>
                     <input type="date" id="responseDate" name="responseDate" required>
                 </div>
-                
+
                 <div class="modal-form-group">
                     <label for="customerName">고객명 <span class="required">*</span></label>
                     <input type="text" id="customerName" name="customerName" required>
                 </div>
-                
+
                 <div class="modal-form-group">
                     <label for="reason">사유 <span class="required">*</span></label>
                     <input type="text" id="reason" name="reason" required>
                 </div>
-                
+
                 <div class="modal-form-group">
                     <label for="actionContent">조치 내용</label>
                     <textarea id="actionContent" name="actionContent"></textarea>
                 </div>
-                
+
                 <div class="modal-form-group">
                     <label for="note">비고</label>
                     <textarea id="note" name="note"></textarea>
                 </div>
             </div>
-            
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-cancel" onclick="closeModal()">취소</button>
                 <button type="submit" class="btn btn-primary" id="submitBtn">저장</button>
@@ -716,22 +739,30 @@
 </div>
 
 <script>
+const selectedYear = <%= selectedYear != null ? selectedYear : currentYear %>;
+const selectedMonth = <%= selectedMonth != null ? selectedMonth : currentMonth %>;
+
 // 자동 조회 함수
 function autoSubmitForm() {
     document.getElementById('filterForm').submit();
 }
 
+function getDefaultResponseDate() {
+    const today = new Date();
+    const day = (today.getFullYear() === selectedYear && today.getMonth() + 1 === selectedMonth)
+        ? today.getDate()
+        : 1;
+    return selectedYear + '-' + String(selectedMonth).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+}
+
 // 모달 열기 (추가)
 function openAddModal() {
     document.getElementById('modalTitle').textContent = '고객 응대 추가';
-    document.getElementById('formAction').value = 'addResponse';
     document.getElementById('responseForm').reset();
+    document.getElementById('formAction').value = 'addResponse';
     document.getElementById('responseId').value = '';
-    
-    // 오늘 날짜 설정
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('responseDate').value = today;
-    
+    document.getElementById('responseDate').value = getDefaultResponseDate();
+
     document.getElementById('responseModal').style.display = 'block';
 }
 
@@ -745,7 +776,7 @@ function openEditModal(id, date, customerName, reason, actionContent, note) {
     document.getElementById('reason').value = reason;
     document.getElementById('actionContent').value = actionContent.replace(/\\n/g, '\n');
     document.getElementById('note').value = note.replace(/\\n/g, '\n');
-    
+
     document.getElementById('responseModal').style.display = 'block';
 }
 
@@ -760,31 +791,31 @@ function deleteResponse(id) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '${pageContext.request.contextPath}/mypage';
-        
+
         const formActionInput = document.createElement('input');
         formActionInput.type = 'hidden';
         formActionInput.name = 'formAction';
         formActionInput.value = 'deleteResponse';
         form.appendChild(formActionInput);
-        
+
         const idInput = document.createElement('input');
         idInput.type = 'hidden';
         idInput.name = 'responseId';
         idInput.value = id;
         form.appendChild(idInput);
-        
+
         const yearInput = document.createElement('input');
         yearInput.type = 'hidden';
         yearInput.name = 'year';
         yearInput.value = '<%= selectedYear != null ? selectedYear : currentYear %>';
         form.appendChild(yearInput);
-        
+
         const monthInput = document.createElement('input');
         monthInput.type = 'hidden';
         monthInput.name = 'month';
         monthInput.value = '<%= selectedMonth != null ? selectedMonth : currentMonth %>';
         form.appendChild(monthInput);
-        
+
         document.body.appendChild(form);
         form.submit();
     }
